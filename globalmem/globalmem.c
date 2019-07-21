@@ -107,20 +107,20 @@ static loff_t globalmem_llseek(struct file *filp, loff_t offset, int orig)
             ret = -EINVAL;
             break;
         }
-        filp->f_ops = (unsigned int)offset;
-        ret = filp->f_ops;
+        filp->f_pos = (unsigned int)offset;
+        ret = filp->f_pos;
         break;
     case 1:
-        if ((filp->f_ops + offset) > GLOBALMEM_SIZE) {
+        if ((filp->f_pos + offset) > GLOBALMEM_SIZE) {
             ret = -EINVAL;
             break;
         }
-        if ((filp->f_ops + offset) < 0) {
+        if ((filp->f_pos + offset) < 0) {
             ret = -EINVAL;
             break;
         }
-        filp->f_ops += offset;
-        ret = filp->f_ops;
+        filp->f_pos += offset;
+        ret = filp->f_pos;
         break;
     default:
         ret = -EINVAL;
