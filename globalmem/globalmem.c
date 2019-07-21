@@ -84,7 +84,37 @@ static ssize_t globalmem_write(struct file *filp, char __user *buf, size_t size,
 
 static loff_t globalmem_llseek(struct file *filp, loff_t offset, int orig)
 {
-
+    loff_t ret = 0;
+    switch (orig) {
+    case 0:
+        if (offset < 0) {
+            ret = -EINVAL;
+            break;
+        }
+        if ((unsigned int)offset > GLOBALMEM_SIZE) {
+            ret = -EINVAL;
+            break;
+        }
+        filp->f_ops = (unsigned int)offset;
+        ret = filp->f_ops;
+        break;
+    case 1:
+        if ((filp->f_ops + offset) > GLOBALMEM_SIZE) {
+            ret = -EINVAL;
+            break;
+        }
+        if ((filp->f_ops + offset) < 0) {
+            ret = -EINVAL;
+            break;
+        }
+        filp->f_ops += offset;
+        ret = filp->f_ops;
+        break;
+    default:
+        ret = -EINVAL;
+        break;
+    }
+    return ret;
 }
 
 static const struct file_operations globalmem_fops {
