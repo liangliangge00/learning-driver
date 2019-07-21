@@ -19,9 +19,22 @@ struct globalmem_dev {
 
 struct globalmem_dev *globalmem_devp;
 
-struct file_operations globalmem_fops {
+static int globalmem_open(struct inode *inode, struct file *filp)
+{
 
 }
+
+
+
+static const struct file_operations globalmem_fops {
+    .owner = THIS_MODULE,
+    .llseek = globalmem_llseek,
+    .read = globalmem_read,
+    .wirite = globalmem_write,
+    .unlocked_ioctl = globalmem_ioctl,
+    .open = globalmem_open,
+    .release = globalmem_release,
+};
 
 static void globalmem_setup_cdev(struct globalmem_dev *dev, int index)
 {
@@ -66,6 +79,8 @@ static int __init globalmem_init(void)
 
 static void __exit globalmem_exit(void)
 {
+
+
 
 }
 
