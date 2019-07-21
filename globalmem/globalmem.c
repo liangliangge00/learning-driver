@@ -15,7 +15,7 @@ module_param(globalmem_major, int, S_IRUGO);
 struct globalmem_dev {
     struct cdev cdev;
     unsigned char mem[GLOBALMEM_SIZE];
-}
+};
 
 struct globalmem_dev *globalmem_devp;
 
