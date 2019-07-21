@@ -70,7 +70,7 @@ static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, 
      return ret;
 }
 
-static ssize_t globalmem_write(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
+static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t size, loff_t *ppos)
 {
     unsigned long p = *ppos;
     unsigned int count = size;
@@ -129,11 +129,11 @@ static loff_t globalmem_llseek(struct file *filp, loff_t offset, int orig)
     return ret;
 }
 
-static const struct file_operations globalmem_fops {
+static const struct file_operations globalmem_fops = {
     .owner = THIS_MODULE,
     .llseek = globalmem_llseek,
     .read = globalmem_read,
-    .wirite = globalmem_write,
+    .write = globalmem_write,
     .unlocked_ioctl = globalmem_ioctl,
     .open = globalmem_open,
     .release = globalmem_release,
@@ -143,10 +143,10 @@ static void globalmem_setup_cdev(struct globalmem_dev *dev, int index)
 {
     int err, devno = MKDEV(globalmem_major, index);
 
-    cdev_init(&dev->cdev, &gloablmem_fops);
+    cdev_init(&dev->cdev, &globalmem_fops);
     dev->cdev.owner = THIS_MODULE;
     err = cdev_add(&dev->cdev, devno, 1);
-    if (erro) {
+    if (err) {
         printk(KERN_NOTICE "Error %d adding globalmem %d", err, index);
     }
     
