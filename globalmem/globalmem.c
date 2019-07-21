@@ -24,7 +24,30 @@ static int globalmem_open(struct inode *inode, struct file *filp)
 
 }
 
+static int globalmem_release(struct inode *inode, struct file *filp)
+{
 
+}
+
+static long globalmem_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+
+}
+
+static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
+{
+
+}
+
+static ssize_t globalmem_write(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
+{
+
+}
+
+static loff_t globalmem_llseek(struct file *filp, loff_t offset, int orig)
+{
+
+}
 
 static const struct file_operations globalmem_fops {
     .owner = THIS_MODULE,
@@ -79,9 +102,9 @@ static int __init globalmem_init(void)
 
 static void __exit globalmem_exit(void)
 {
-
-
-
+    cdev_del(&globalmem_devp->cdev);
+    kfree(globalmem_devp);
+    unregister_chrdev_region(MKDEV(globalmem_major, 0), 1);
 }
 
 module_init(globalmem_init);
