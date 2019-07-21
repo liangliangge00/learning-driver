@@ -60,7 +60,26 @@ static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, 
 
 static ssize_t globalmem_write(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
 {
+    unsigned long p = *ppos;
+    unsigned int count = size;
+    int ret = 0;
+    struct globalmem_dev *dev = filp->private_data;
 
+    if (p > GLOBALMEM_SIZE)
+        return 0;
+    if (count > GLOBALMEM_SIZE - p)
+        count = GLOBALMEM_SIZE - p;
+
+    if (copy_from_user(dev->mem + p, buf, count)) {
+        return -EFAULT;
+    } else {
+        *ppos += count;
+        ret = count;
+
+        printk(KERN_INFO "written %u bytes(s) from %lu\n", count, p);
+    }
+
+    return ret;
 }
 
 static loff_t globalmem_llseek(struct file *filp, loff_t offset, int orig)
