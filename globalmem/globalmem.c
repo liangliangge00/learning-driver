@@ -36,7 +36,26 @@ static long globalmem_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 
 static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
 {
+    unsigned long p = *ppos;
+    unsigned int count = size;
+    int ret = 0;
+    struct globalmem_dev *dev = filp->private_data;
 
+    if (p > GLOBALMEM_SIZE)
+        return 0;
+    if (count > GLOBALMEM_SIZE - p)
+        count = GLOBALMEM_SIZE - p;
+
+     if (copy_to_user(buf, dev->mem + p), count) {
+         ret = -EFAULT;
+     } else {
+         *ppos += count;
+         ret = count;
+
+         printk(KERN_INFO "read %u bytes(s) from %lu\n", count, p);
+     }
+
+     return ret;
 }
 
 static ssize_t globalmem_write(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
