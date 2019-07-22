@@ -23,12 +23,12 @@ static void light_gpio_init(void)
     ...
 }
 
-static void led_on(void)
+static void light_on(void)
 {
     ...
 }
 
-static void led_off(void)
+static void light_off(void)
 {
     ...
 }
