@@ -6,6 +6,8 @@
 #include <linux/uaccess.h>
 
 #define LIGHT_MAJOR  231
+#define LIGHT_ON  1
+#define LIGHT_OFF  0
 
 struct light_dev {
     struct cdev cdev;
@@ -15,6 +17,21 @@ struct light_dev {
 struct light_dev *light_devp;
 
 static int light_major = LIGHT_MAJOR;
+
+static void light_gpio_init(void)
+{
+    ...
+}
+
+static void led_on(void)
+{
+    ...
+}
+
+static void led_off(void)
+{
+    ...
+}
 
 static ssize_t light_read(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
 {
@@ -27,12 +44,37 @@ static ssize_t light_read(struct file *filp, char __user *buf, size_t size, loff
 
 static ssize_t light_write(struct file *filp, const char __user *buf, size_t size, loff_t *ppos)
 {
+    struct light_dev *dev = filp->private_data;
 
+    if (copy_from_user(&(dev->value), buf, 1))
+        return -EFAULT;
+
+    if (dev->value == 1)
+        light_on();
+    else
+        light_off();
+
+    return 1;
 }
 
 static long light_ioctl(struct file *filp, unsigned int cmd, unsigned  long arg)
 {
+    struct light_dev *dev = filp->private_data;
 
+    switch (cmd) {
+    case LIGHT_ON:
+        dev->value = 1;
+        light_on();
+        break;
+    case LIGHT_OFF:
+        dev->value = 0;
+        light_off();
+        break;
+    default:
+        return -ENOTTY;
+    }
+
+    return 0;
 }
 
 static int light_open(struct inode *inode, struct file *filp)
@@ -66,11 +108,6 @@ static void light_setup_cdev(struct light_dev *dev, int index)
     if (err) {
         printk(KERN_NOTICE "Error %d adding LED %d",err, index);
     } 
-}
-
-static void light_gpio_init(void)
-{
-    ...
 }
 
 static int __init light_init(void)
