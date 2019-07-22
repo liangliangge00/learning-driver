@@ -16,9 +16,43 @@ struct light_dev *light_devp;
 
 static int light_major = LIGHT_MAJOR;
 
-static const struct file_operations light_fops = {
-    .owner = THIS_MODULE;
+static ssize_t light_read(struct file *filp, char __user *buf, size_t size, loff_t *ppos)
+{
+    struct ligth_dev *dev = filp->private_data;
+    if (copy_to_user(buf, &(dev->valus), 1)) 
+        return -EFAULT;
 
+    return 1;
+}
+
+static ssize_t light_write(struct file *filp, const char __user *buf, size_t size, loff_t *ppos)
+{
+
+}
+
+static long light_ioctl(struct file *filp, unsigned int cmd, unsigned  long arg)
+{
+
+}
+
+static int light_open(struct inode *inode, struct file *filp)
+{
+    filp->private = light_devp;
+    return 0;
+}
+
+static int light_release(struct inode *inode, struct file *filp)
+{
+    return 0;
+}
+
+static const struct file_operations light_fops = {
+    .owner = THIS_MODULE,
+    .read = light_read,
+    .write = light_write,
+    .unlocked_ioctl = light_ioctl,
+    .open = light_open,
+    .release = light_release,
 };
 
 static void light_setup_cdev(struct light_dev *dev, int index)
