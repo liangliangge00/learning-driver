@@ -175,7 +175,7 @@ static int __init globalmem_init(void)
     globalmem_setup_cdev(globalmem_devp, 0);
     return 0;
 
-    fail_malloc:
+fail_malloc:
     unregister_chrdev_region(devno, 1);
     return ret;
 }
