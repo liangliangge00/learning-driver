@@ -149,7 +149,7 @@ static void globalmem_setup_cdev(struct globalmem_dev *dev, int index)
     dev->cdev.owner = THIS_MODULE;
     err = cdev_add(&dev->cdev, devno, 1);
     if (err) {
-        printk(KERN_NOTICE "Error %d adding globalmem %d", err, index);
+        printk(KERN_NOTICE "Error %d adding multi-globalmem %d", err, index);
     }
     
 }
@@ -161,9 +161,9 @@ static int __init globalmem_init(void)
     dev_t devno = MKDEV(globalmem_major, 0);
 
     if (globalmem_major) {
-        ret = register_chrdev_region(devno, DEVICE_NUM, "globalmem");
+        ret = register_chrdev_region(devno, DEVICE_NUM, "multi-globalmem");
     } else {
-        ret = alloc_chrdev_region(&devno, 0, DEVICE_NUM, "globalmem");
+        ret = alloc_chrdev_region(&devno, 0, DEVICE_NUM, "multi-globalmem");
         globalmem_major = MAJOR(devno);
     }
     if (ret < 0)
