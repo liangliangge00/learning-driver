@@ -5,7 +5,7 @@
 static ssize_t xxx_write(struct file *filp, const char *buffer, size_t count, loff_t *ppos)
 {
 	...
-	DECLARE_WAITQUEUE(wait, current);	/*Define wait queue element*/
+	DECLARE_WAITQUEUE(wait, current);	/*define wait queue element*/
 	add_wait_queue(&xxx_wait, &wait);	/*add a new element to wait queue*/
 
 	/*wait for the devices buffer to be writable*/
