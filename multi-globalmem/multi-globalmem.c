@@ -60,16 +60,16 @@ static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, 
     if (count > GLOBALMEM_SIZE - p)
         count = GLOBALMEM_SIZE - p;
 
-     if (copy_to_user(buf, dev->mem + p, count)) {
-         ret = -EFAULT;
-     } else {
-         *ppos += count;
-         ret = count;
+    if (copy_to_user(buf, dev->mem + p, count)) {
+        ret = -EFAULT;
+    } else {
+        *ppos += count;
+        ret = count;
 
-         printk(KERN_INFO "read %u bytes(s) from %lu\n", count, p);
-     }
+        printk(KERN_INFO "read %u bytes(s) from %lu\n", count, p);
+    }
 
-     return ret;
+    return ret;
 }
 
 static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t size, loff_t *ppos)
