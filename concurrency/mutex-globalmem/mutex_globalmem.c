@@ -37,7 +37,9 @@ static long globalmem_ioctl(struct file *filp, unsigned int cmd, unsigned long a
 
     switch (cmd) {
     case MEM_CLEAR:
+		mutex_lock(&dev->mutex);	/*my mutex lock*/
         memset(dev->mem, 0, GLOBALMEM_SIZE);
+		mutex_unlock(&dev->mutex);	/*my mutex unlock*/
         printk(KERN_INFO "globalmem is set to zero");
         break;
     default:
@@ -150,7 +152,7 @@ static void globalmem_setup_cdev(struct globalmem_dev *dev, int index)
     dev->cdev.owner = THIS_MODULE;
     err = cdev_add(&dev->cdev, devno, 1);
     if (err) {
-        printk(KERN_NOTICE "Error %d adding globalmem %d", err, index);
+        printk(KERN_NOTICE "Error %d adding mutex_globalmem %d", err, index);
     }
     
 }
@@ -161,9 +163,9 @@ static int __init globalmem_init(void)
     dev_t devno = MKDEV(globalmem_major, 0);
 
     if (globalmem_major) {
-        ret = register_chrdev_region(devno, 1, "globalmem");
+        ret = register_chrdev_region(devno, 1, "mutex_globalmem");
     } else {
-        ret = alloc_chrdev_region(&devno, 0, 1, "globalmem");
+        ret = alloc_chrdev_region(&devno, 0, 1, "mutex_globalmem");
         globalmem_major = MAJOR(devno);
     }
     if (ret < 0)
