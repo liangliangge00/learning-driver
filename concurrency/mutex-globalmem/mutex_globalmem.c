@@ -38,7 +38,7 @@ static long globalmem_ioctl(struct file *filp, unsigned int cmd, unsigned long a
     switch (cmd) {
     case MEM_CLEAR:
         memset(dev->mem, 0, GLOBALMEM_SIZE);
-        printk(KERN_INFO "globalmem is set to zero\n");
+        printk(KERN_INFO "globalmem is set to zero");
         break;
     default:
         return -EINVAL;
@@ -59,16 +59,17 @@ static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, 
     if (count > GLOBALMEM_SIZE - p)
         count = GLOBALMEM_SIZE - p;
 
-     if (copy_to_user(buf, dev->mem + p, count)) {
-         ret = -EFAULT;
-     } else {
-         *ppos += count;
-         ret = count;
+	mutex_lock(&dev->mutex);	/*my mutex lock*/
+	if (copy_to_user(buf, dev->mem + p, count)) {
+		ret = -EFAULT;
+	} else {
+		*ppos += count;
+		ret = count;
+		printk(KERN_INFO "read %u bytes(s) from %lu", count, p);
+	}
+	mutex_unlock(&dev->mutex);	/*my mutex unlock*/
 
-         printk(KERN_INFO "read %u bytes(s) from %lu\n", count, p);
-     }
-
-     return ret;
+	return ret;
 }
 
 static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t size, loff_t *ppos)
@@ -83,14 +84,15 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t
     if (count > GLOBALMEM_SIZE - p)
         count = GLOBALMEM_SIZE - p;
 
+	mutex_lock(&dev->mutex);	/*my mutex lock*/
     if (copy_from_user(dev->mem + p, buf, count)) {
         return -EFAULT;
     } else {
         *ppos += count;
         ret = count;
-
-        printk(KERN_INFO "written %u bytes(s) from %lu\n", count, p);
+        printk(KERN_INFO "written %u bytes(s) from %lu", count, p);
     }
+	mutex_unlock(&dev->mutex);	/*my mutex unlock*/
 
     return ret;
 }
@@ -172,7 +174,8 @@ static int __init globalmem_init(void)
         ret = -ENOMEM;
         goto fail_malloc;
     }
-
+	
+	mutex_init(&globalmem_devp->mutex);	/*init my mutex*/
     globalmem_setup_cdev(globalmem_devp, 0);
     return 0;
 
