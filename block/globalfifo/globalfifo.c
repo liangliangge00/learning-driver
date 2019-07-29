@@ -34,24 +34,6 @@ static int globalfifo_release(struct inode *inode, struct file *filp)
     return 0;
 }
 
-static long globalfifo_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-{
-    struct globalfifo_dev *dev = filp->private_data;
-
-    switch (cmd) {
-    case MEM_CLEAR:
-		mutex_lock(&dev->mutex);	/* my mutex lock */
-        memset(dev->mem, 0, GLOBALFIFO_SIZE);
-		mutex_unlock(&dev->mutex);	/* my mutex unlock */
-        printk(KERN_INFO "globalfifo is set to zero");
-        break;
-    default:
-        return -EINVAL;
-    }
-
-    return 0;
-}
-
 static ssize_t globalfifo_read(struct file *filp, char __user *buf, size_t count, loff_t *ppos)
 {
     int ret;
@@ -183,14 +165,32 @@ static loff_t globalfifo_llseek(struct file *filp, loff_t offset, int orig)
     return ret;
 }
 
+static long globalfifo_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+    struct globalfifo_dev *dev = filp->private_data;
+
+    switch (cmd) {
+    case MEM_CLEAR:
+		mutex_lock(&dev->mutex);	/* my mutex lock */
+		memset(dev->mem, 0, GLOBALFIFO_SIZE);
+		mutex_unlock(&dev->mutex);	/* my mutex unlock */
+		printk(KERN_INFO "globalfifo is set to zero");
+		break;
+    default:
+        return -EINVAL;
+    }
+
+    return 0;
+}
+
 static const struct file_operations globalfifo_fops = {
     .owner = THIS_MODULE,
-    .llseek = globalfifo_llseek,
-    .read = globalfifo_read,
-    .write = globalfifo_write,
-    .unlocked_ioctl = globalfifo_ioctl,
     .open = globalfifo_open,
     .release = globalfifo_release,
+    .read = globalfifo_read,
+    .write = globalfifo_write,
+    .llseek = globalfifo_llseek,
+    .unlocked_ioctl = globalfifo_ioctl,
 };
 
 static void globalfifo_setup_cdev(struct globalfifo_dev *dev, int index)
