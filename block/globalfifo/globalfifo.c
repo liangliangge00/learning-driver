@@ -13,12 +13,12 @@ static int globalfifo_major = GLOBALFIFO_MAJOR;
 module_param(globalfifo_major, int, S_IRUGO);
 
 struct globalfifo_dev {
-    struct cdev cdev;		/* char device */
+    struct cdev cdev;			/* char device */
 	unsigned int current_len;
-    unsigned char mem[GLOBALFIFO_SIZE];	/* 4K memory*/
-    struct mutex mutex;		/* mutex lock*/
-	wait_queue_head_t r_wait;	/* read wait queue */
-	wait_queue_head_t w_wait;	/* write wait queue */
+    unsigned char mem[GLOBALFIFO_SIZE];		/* 4K memory*/
+    struct mutex mutex;				/* mutex lock*/
+	wait_queue_head_t r_wait;		/* read wait queue */
+	wait_queue_head_t w_wait;		/* write wait queue */
 };
 
 struct globalfifo_dev *globalfifo_devp;
