@@ -1,8 +1,6 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-
-
 struct list_head {
 	struct list_head *next, *prev;
 };
@@ -76,6 +74,7 @@ void list_add(struct list_head *new, struct list_head *head)
 #define list_prev_entry(pos, member)	\
 	list_entry((pos)->member.prev, typeof(*(pos)), member)
 
+
 /**
  *	list_for_each_entry - iterate over list of given type
  *	@pos:	 the type * to use as a loop cursor.
@@ -100,9 +99,5 @@ void list_add(struct list_head *new, struct list_head *head)
 		pos = list_prev_entry(pos, member))
 
 
-
-
-
 #endif
-
 
