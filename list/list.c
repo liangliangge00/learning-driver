@@ -23,7 +23,11 @@ int main(int argc, char *argv[])
 		INIT_LIST_HEAD(&task[i].my_list);
 		list_add(&task[i].my_list, &head_task.my_list);
 	}
-
+/*
+	list_for_each_entry_reverse(pos_ptr, &head_task.my_list, my_list) {
+		printf(" %d ", pos_ptr->val);	
+	}
+*/
 	list_for_each_entry(pos_ptr, &head_task.my_list, my_list) {
 		printf(" %d ", pos_ptr->val);	
 	}
