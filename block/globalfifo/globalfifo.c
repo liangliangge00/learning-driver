@@ -4,6 +4,9 @@
 #include <linux/cdev.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
+#include <linux/wait.h>
+#include <linux/sched/signal.h>
+#include <linux/sched.h>
 
 #define GLOBALFIFO_SIZE  0x1000
 #define MEM_CLEAR  0x1
@@ -60,7 +63,7 @@ static ssize_t globalfifo_read(struct file *filp, char __user *buf, size_t count
 	}
 
     if (count > dev->current_len)	/* max length */
-        count = current_len;
+        count = dev->current_len;
 
 	if (copy_to_user(buf, dev->mem, count)) {	/* if copy_to_user() succeeds, return 0 */
 		ret = -EFAULT;
@@ -69,7 +72,7 @@ static ssize_t globalfifo_read(struct file *filp, char __user *buf, size_t count
 		/* copy the rest of globalfifo to the front */
 		memcpy(dev->mem, dev->mem + count, dev->current_len - count);	
 		dev->current_len -= count;		/* modified current length */
-		printk(KERN_INFO "read %d bytes(s),current_len:%d\n", count, dev->current_len);
+		printk(KERN_INFO "read %lu bytes(s),current_len:%d\n", count, dev->current_len);
 
 		wake_up_interruptible(&dev->w_wait);	/* wake up th write process */
 		ret = count;
@@ -117,7 +120,7 @@ static ssize_t globalfifo_write(struct file *filp, const char __user *buf, size_
 		goto out;
     } else {
 		dev->current_len += count;		/* current length */
-        printk(KERN_INFO "written %u bytes(s),current_len:%d\n", count, dev->current_len);
+        printk(KERN_INFO "written %lu bytes(s),current_len:%d\n", count, dev->current_len);
 
 		wake_up_interruptible(&dev->r_wait);	/* wake up the r_wait wait queue process*/
 		ret = count;
@@ -228,8 +231,8 @@ static int __init globalfifo_init(void)
 	
     globalfifo_setup_cdev(globalfifo_devp, 0);	/*init the char device */
 	mutex_init(&globalfifo_devp->mutex);	/* init my mutex */
-	init_waitqueue_head(&globalfifo->r_wait);	/* init wait queue head*/
-	init_waitqueue_head(&globalfifo->w_wait);
+	init_waitqueue_head(&globalfifo_devp->r_wait);	/* init wait queue head*/
+	init_waitqueue_head(&globalfifo_devp->w_wait);
 
     return 0;
 
