@@ -1,0 +1,8 @@
+# Makefile for globalfifo-poll.c
+
+all:
+	gcc globalfifo-poll.c -o globalfifo-poll
+
+clean:
+	rm -rf globalfifo-poll
+

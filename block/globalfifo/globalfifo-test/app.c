@@ -12,13 +12,13 @@ int main(int argc, char *argv[])
     int fd,len;
     char str[LENGTH];
 
-    fd = open("/dev/globalmem", O_RDWR);
+    fd = open("/dev/globalfifo", O_RDWR);
     if (fd) {
         write(fd, "Hello World", strlen("Hello World"));
         close(fd);
     }
 
-    fd = open("/dev/globalmem", O_RDWR);
+    fd = open("/dev/globalfifo", O_RDWR);
     len = read(fd, str, LENGTH);
     str[len] = '\0';
     printf("str:%s\n", str);
