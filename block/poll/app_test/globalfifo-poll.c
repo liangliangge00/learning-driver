@@ -38,4 +38,5 @@ int main(int argc, char *argv[])
 	} else {
 		printf("Device open failure\n");
 	}
+	return 0;
 }
