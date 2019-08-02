@@ -1,0 +1,29 @@
+/*
+ *	Cortex-A9-->| | 
+ *				|l|
+ *	Cortex-A9-->|o|-->serial controller(two serial,address->1:0x101F1000 2:0x101F2000)
+ *				|c|
+ *				|a|-->spi controller(addres:0x1017000)
+ *				|l|
+ *				| |-->gpio controller(addres:0x101F3000)
+ *				|b|
+ *				|u|-->interrupt controller(address:0x1014000)
+ *				|s|
+ *				| |-->external bus bridge--->| |
+ *				|_|							 |e|
+ *											 |x|-->SMC91111(address:0x10100000)
+ *											 |t|
+ *											 |e|-->NOR Flash(64MB,address:0x30000000)
+ *											 |r|
+ *											 |n|-->I2C controller--->| |
+ *											 | |(address:0x10160000) |I|
+ *											 |b|					 |I|
+ *											 |u|					 |C|
+ *											 |s|					 | |-->DS1338(I2C address:0x58)
+ *											 |_|					 |b|
+ *																	 |u|
+ *																	 |s|
+ *																	 |_|
+ */
+ 
+ 
