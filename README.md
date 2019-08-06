@@ -22,3 +22,5 @@ Simple LED character device driver.
 # concurrency
 Concurrency control in Linux device drivers.
 
+# platform-driver
+The platform model in the Linux driver.
