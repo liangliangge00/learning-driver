@@ -54,6 +54,7 @@ static void hello_exit(void)
 
 module_init(hello_init);
 module_exit(hello_exit);
+
 MODULE_AUTHOR("HLY");
 MODULE_DESCRIPTION("A simplest module");
 MODULE_LICENSE("GPL v2");
