@@ -78,7 +78,7 @@
 		};
 		
 		external-bus {
-			#address-cells = <3>;
+			#address-cells = <2>;
 			#size-cells = <1>;
 			ranges = <0 0 0x10100000 0x10000	//chipselect 1,Ethernet
 					  1 0 0x10160000 0x10000	//chipselect 2,i2c controller
