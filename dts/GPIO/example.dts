@@ -1,0 +1,41 @@
+	...
+	...
+	...
+	pinctrl@80018000 {
+		compatible = "fsl,imx28-pinctrl", "simple-bus";
+		reg = <0x80018000 2000>;
+		
+		gpio0: gpio@0 {
+			compatible = "fsl,imx28-gpio";
+			interrupts = <127>;
+			gpio-controller;
+				#gpio-cells = <2>;
+			interrupt-controller;
+				#interrupt-cells = <2>;
+		};
+
+		gpio1: gpio@1 {
+			compatible = "fsl,imx28-gpio";
+			interrupts = <126>;
+			gpio-controller;
+				#gpio-cells = <2>;
+			interrupt-controller;
+				#interrupt-cells = <2>;
+		};
+
+		...
+		...
+		...
+	};
+
+
+	/* use GPIO */
+	sdhci@c8000400 {
+		status = "okay";
+		cd-gpios = <&gpio01 0>;
+		wp-gpios = <&gpio02 0>;
+		power-gpios = <&gpio03 0>;
+		bus-width = <4>;
+	};
+
+
