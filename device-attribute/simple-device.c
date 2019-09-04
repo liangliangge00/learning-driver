@@ -27,7 +27,7 @@ static struct file_operations myfops = {
 	.owner = THIS_MODULE,
 };
 
-int __init mydevice_init(void)
+static int __init mydevice_init(void)
 {
 	int ret;
 	struct device *mydevice;
@@ -62,7 +62,7 @@ fail:
 	return ret;
 }
 
-void __exit mydevice_exit(void)
+static void __exit mydevice_exit(void)
 {
 	device_destroy(myclass, MKDEV(major, 0));
 	class_destroy(myclass);
@@ -75,5 +75,4 @@ module_exit(mydevice_exit);
 MODULE_DESCRIPTION("A simplest driver");
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("HLY");
-
 
