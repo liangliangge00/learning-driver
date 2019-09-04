@@ -1,6 +1,6 @@
 # Makefile for driver
 
-obj-m += simple-device.o
+obj-m += mydevice.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
