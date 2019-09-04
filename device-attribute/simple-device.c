@@ -21,7 +21,7 @@ static ssize_t mydevice_store(struct device *dev, struct device_attribute *attr,
 
 	return count;
 }
-static DEVICE_ATTR(mydevice, 0644, mydevice_show, mydevice_store);
+static DEVICE_ATTR(test_device, 0644, mydevice_show, mydevice_store);
 
 static struct file_operations myfops = {
 	.owner = THIS_MODULE,
@@ -40,18 +40,18 @@ static int __init mydevice_init(void)
 	
 	myclass = class_create(THIS_MODULE, "myclass");
 	if (IS_ERR(myclass)) {
-		ret = -EBUSY;
+		ret = PTR_ERR(myclass);
 		goto fail;
 	}
 	
-	mydevice = device_create(myclass, NULL, MKDEV(major, 0), NULL, "mydevice");
+	mydevice = device_create(myclass, NULL, MKDEV(major, 0), NULL, "simple-device");
 	if (IS_ERR(mydevice)) {
 		class_destroy(myclass);
-		ret = -EBUSY;
+		ret = PTR_ERR(mydevice);
 		goto fail;
 	}
 
-	ret = sysfs_create_file(&mydevice->kobj, &dev_attr_mydevice.attr);
+	ret = sysfs_create_file(&mydevice->kobj, &dev_attr_test_device.attr);
 	if (ret < 0)
 		return ret;
 
