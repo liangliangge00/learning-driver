@@ -33,7 +33,7 @@ static int __init mydevice_init(void)
 	if (IS_ERR(myclass)) {
 		ret = PTR_ERR(myclass);
 		myclass = NULL;
-		goto fail;
+		return ret;
 	}
 	
 	mydevice = device_create(myclass, NULL, MKDEV(0, 0), NULL, "mydevice");
@@ -41,7 +41,7 @@ static int __init mydevice_init(void)
 		class_destroy(myclass);
 		ret = PTR_ERR(mydevice);
 		mydevice = NULL;
-		goto fail;
+		return ret;
 	}
 
 	ret = device_create_file(mydevice, &dev_attr_test_device);
@@ -49,9 +49,6 @@ static int __init mydevice_init(void)
 		return ret;
 
 	return 0;
-
-fail:
-	return ret;
 }
 
 static void __exit mydevice_exit(void)
