@@ -8,7 +8,6 @@ static int foo;
 static int baz;
 static int bar;
 
-
 static ssize_t foo_show(struct kobject *kobj, struct kobj_attribute *attr,
 		char *buf)
 {
@@ -26,10 +25,8 @@ static ssize_t foo_store(struct kobject *kobj, struct kobj_attribute *attr,
 
 	return count;
 }
-
 static struct kobj_attribute foo_attr = 
 	__ATTR(foo, 0644, foo_show, foo_store);
-
 
 static ssize_t b_show(struct kobject *kobj, struct kobj_attribute *attr,
 		char *buf)
@@ -59,7 +56,6 @@ static ssize_t b_store(struct kobject *kobj, struct kobj_attribute *attr,
 		bar = var;
 	return count;
 }
-
 static struct kobj_attribute baz_attr = 
 	__ATTR(baz, 0644, b_show, b_store);
 static struct kobj_attribute bar_attr = 

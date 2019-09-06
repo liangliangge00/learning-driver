@@ -1,6 +1,6 @@
 # Makefile for driver
 
-obj-m += kobject.o
+obj-m += kobject_example.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
