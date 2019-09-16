@@ -47,6 +47,8 @@ static int __init mydevice_init(void)
 	ret = device_create_file(mydevice, &dev_attr_test_device);
 	if (ret < 0)
 		return ret;
+	
+	printk(KERN_INFO "mydevice init.\n");
 
 	return 0;
 }
@@ -55,6 +57,7 @@ static void __exit mydevice_exit(void)
 {
 	device_destroy(myclass, MKDEV(0, 0));
 	class_destroy(myclass);
+	printk(KERN_INFO "mydevice exit.\n");
 }
 
 module_init(mydevice_init);
@@ -63,4 +66,3 @@ module_exit(mydevice_exit);
 MODULE_DESCRIPTION("A simplest driver");
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("HLY");
-

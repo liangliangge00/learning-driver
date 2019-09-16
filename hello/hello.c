@@ -3,8 +3,11 @@
 
 static int __init hello_init(void)
 {
-    printk(KERN_INFO "Hello World enter.\n");
-    return 0;
+	int i;
+	for (i = 0; i < 5; i++)
+		printk(KERN_INFO "Hello World enter.\n");
+    
+	return 0;
 }
 
 static void __exit hello_exit(void)
