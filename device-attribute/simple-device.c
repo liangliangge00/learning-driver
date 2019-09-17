@@ -75,4 +75,3 @@ module_exit(mydevice_exit);
 MODULE_DESCRIPTION("A simplest driver");
 MODULE_LICENSE("GPL v2");
 MODULE_AUTHOR("HLY");
-
