@@ -14,29 +14,33 @@ static int globalmem_major = GLOBALMEM_MAJOR;
 module_param(globalmem_major, int, S_IRUGO);
 
 
-unsigned char mem[GLOBALMEM_SIZE];
+unsigned char mem[GLOBALMEM_SIZE];	//4k memory
+
 static struct class *globalmem_class;
 static struct device *globalmem_device;
 
 static int globalmem_open(struct inode *inode, struct file *filp)
 {
+	printk("globalmem->open() is called.\n");
     filp->private_data = mem;
     return 0;
 }
 
 static int globalmem_release(struct inode *inode, struct file *filp)
 {
-    return 0;
+   printk("globalmem->close() is called.\n");
+   return 0;
 }
 
 static long globalmem_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
     unsigned char *mem = filp->private_data;
-
+	
+	printk("globalmem->ioctl() is called.\n");
     switch (cmd) {
     case MEM_CLEAR:
         memset(mem, 0, GLOBALMEM_SIZE);
-        printk(KERN_INFO "globalmem is set to zero\n");
+        printk("globalmem->globalmem is set to zero.\n");
         break;
     default:
         return -EINVAL;
@@ -52,6 +56,7 @@ static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, 
     int ret = 0;
     unsigned char *mem = filp->private_data;
 
+	printk("globalmem->read() is called.\n");
     if (p > GLOBALMEM_SIZE)
         return 0;
     if (count > GLOBALMEM_SIZE - p)
@@ -63,7 +68,7 @@ static ssize_t globalmem_read(struct file *filp, char __user *buf, size_t size, 
         *ppos += count;
         ret = count;
 
-        printk(KERN_INFO "read %u bytes(s) from %lu\n", count, p);
+        printk("globalmem->read %u bytes(s) from %lu.\n", count, p);
     }
 
     return ret;
@@ -76,6 +81,7 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t
     int ret = 0;
     unsigned char *mem = filp->private_data;
 
+	printk("globalmem->write() is called.\n");
     if (p > GLOBALMEM_SIZE)
         return 0;
     if (count > GLOBALMEM_SIZE - p)
@@ -87,7 +93,7 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t
         *ppos += count;
         ret = count;
 
-        printk(KERN_INFO "written %u bytes(s) from %lu\n", count, p);
+        printk("globalmem->write %u bytes(s) from %lu.\n", count, p);
     }
 
     return ret;
@@ -96,6 +102,8 @@ static ssize_t globalmem_write(struct file *filp, const char __user *buf, size_t
 static loff_t globalmem_llseek(struct file *filp, loff_t offset, int orig)
 {
     loff_t ret = 0;
+
+	printk("globalmem->lseek() is called.\n");
     switch (orig) {
     case 0:
         if (offset < 0) {
@@ -142,13 +150,15 @@ static const struct file_operations globalmem_fops = {
 static int __init globalmem_init(void)
 {
     int ret;
-    dev_t devno = MKDEV(globalmem_major, 0);
-
+    dev_t devno;
+	
+	devno = MKDEV(globalmem_major, 0);
 	ret = register_chrdev(globalmem_major, "globalmem", &globalmem_fops);
+	printk("globalmem->register_chrdev()->ret = %d.\n", ret);
     if (ret < 0)
         return ret;
 	
-	globalmem_class = class_create(THIS_MODULE, "globalmem_class");
+	globalmem_class = class_create(THIS_MODULE, "globalmem-class");	//The name of calss
 	if (IS_ERR(globalmem_class)) {
 		ret = -EBUSY;
 		goto fail;
@@ -162,7 +172,7 @@ static int __init globalmem_init(void)
 		goto fail;
 	}
 	
-	printk(KERN_INFO "globalmem init\n");
+	printk("globalmem->globalmem init.\n");
     return 0;
 
 fail:
@@ -172,11 +182,13 @@ fail:
 
 static void __exit globalmem_exit(void)
 {
-	dev_t devno = MKDEV(globalmem_major, 0);
-	device_destroy(globalmem_class, devno);
-	class_destroy(globalmem_class);
+	dev_t devno;
+	
+	devno = MKDEV(globalmem_major, 0);
+	device_destroy(globalmem_class, devno);	//delete device
+	class_destroy(globalmem_class);	//delete class
 	unregister_chrdev(globalmem_major, "globalmem");
-	printk(KERN_INFO "globalmem exit\n");
+	printk("globalmem->globalmem exit.\n");
 }
 
 module_init(globalmem_init);
@@ -185,5 +197,4 @@ module_exit(globalmem_exit);
 MODULE_AUTHOR("HLY");
 MODULE_DESCRIPTION("A simple globalmem driver");
 MODULE_LICENSE("GPL v2");
-
 
