@@ -3,10 +3,7 @@
 
 static int __init hello_init(void)
 {
-	int i;
-	for (i = 0; i < 5; i++)
-		printk(KERN_INFO "Hello World enter.\n");
-    
+	printk(KERN_INFO "Hello World enter.\n");
 	return 0;
 }
 
