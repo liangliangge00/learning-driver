@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
 	int fd;
 
-	fd = open("/dev/hello", O_RDWR);
+	fd = open("/dev/hello-device", O_RDWR);
 	if (fd < 0) {
 		printf("open fail\n");
 		exit(-1);

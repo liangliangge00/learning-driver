@@ -1,6 +1,6 @@
 # Makefile for hello module
 
-obj-m += hello.o
+obj-m += hello-device.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules
