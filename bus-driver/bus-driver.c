@@ -7,12 +7,6 @@ static struct bus_type mybus_type = {
 	.name = "mybus",
 };
 
-static struct device_driver mydriver = {
-	.name = "mydriver",
-	.bus = &mybus_type,
-	.owner = THIS_MODULE,
-};
-
 static ssize_t mybus_show(struct bus_type *bus, char *buf)
 {
 	return sprintf(buf, "%s\n", mybuf);
@@ -24,6 +18,12 @@ static ssize_t mybus_store(struct bus_type *bus, const char *buf, size_t count)
 	return count;
 }
 static BUS_ATTR(mybus, 0644, &mybus_show, &mybus_store);
+
+static struct device_driver mydriver = {
+	.name = "mydriver",
+	.bus = &mybus_type,
+	.owner = THIS_MODULE,
+};
 
 static int __init bus_driver_init(void)
 {
