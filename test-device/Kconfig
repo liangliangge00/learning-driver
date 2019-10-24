@@ -1,0 +1,8 @@
+
+source "drivers/test-device/hello/Kconfig"
+
+source "drivers/test-device/i2c/Kconfig"
+
+source "drivers/test-device/gpio/Kconfig"
+
+source "drivers/test-device/input/Kconfig"

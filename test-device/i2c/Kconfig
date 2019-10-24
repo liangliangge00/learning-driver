@@ -1,0 +1,4 @@
+config I2C_TEST
+	tristate "i2c test device"
+	help
+		A test driver for i2c.

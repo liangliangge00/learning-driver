@@ -1,0 +1,19 @@
+# dts node #
+
+i2c@78b9000 {
+
+	i2c_device@58 {
+		compatible = "i2c,test-device";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&device_gpio_off>;
+
+		reg = <0x58>;
+		dev,name = "virtual-device";
+		dev,first-number = <0 300 600 900>;
+		dev,second-number = <200 400 600>;
+		dev,test-gpio = <&msm_gpio 97 0>;
+	};
+
+};
+

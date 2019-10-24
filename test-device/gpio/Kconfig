@@ -1,0 +1,5 @@
+
+config GPIO_TEST
+	tristate "gpio test device"
+	help
+		A simple driver for gpio.

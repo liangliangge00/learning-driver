@@ -1,0 +1,4 @@
+config HELLO
+	tristate "hello test device"
+	help
+		A test driver for hello.

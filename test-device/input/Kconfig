@@ -1,0 +1,5 @@
+
+config INPUT_TEST
+	tristate "input test device"
+	help
+		A simple driver for input system.
