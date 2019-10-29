@@ -69,7 +69,7 @@ static int dev_gpio_probe(struct platform_device *pdev)
 		if (ret) {
 			dev_err(&pdev->dev, "failed to parse device tree\n");
 			ret = -ENODEV;
-			goto exit_parse_dt_err;
+			goto err1;
 		}
 	} else 
 		pdata = pdev->dev.platform_data;
@@ -78,7 +78,7 @@ static int dev_gpio_probe(struct platform_device *pdev)
 			sizeof(struct device_data), GFP_KERNEL);
 	if (!dev_data) {
 		ret = -ENOMEM;
-		goto exit_alloc_dev_data_err;
+		goto err1;
 	}
 	dev_data->pdev = pdev;
 	dev_data->pdata = pdata;
@@ -90,7 +90,7 @@ static int dev_gpio_probe(struct platform_device *pdev)
 		if (ret) {
 			dev_err(&pdev->dev, "failed to request gpio number %d\n",
 				pdata->gpio_num);
-			goto exit_request_gpio_err;
+			goto err2;
 		}
 		
 		value = gpio_get_value(pdata->gpio_num);
@@ -99,7 +99,7 @@ static int dev_gpio_probe(struct platform_device *pdev)
 		ret = gpio_direction_output(pdata->gpio_num, 1);
 		if (ret) {
 			dev_err(&pdev->dev, "failed to set gpio output\n");
-			goto exit_dir_output_err;
+			goto err3;
 		}
 		
 		value = gpio_get_value(pdata->gpio_num);
@@ -109,20 +109,18 @@ static int dev_gpio_probe(struct platform_device *pdev)
 		if (ret) {
 			dev_err(&pdev->dev, "failed to export gpio number %d\n",
 				pdata->gpio_num);
-			goto exit_export_gpio_err;
+			goto err3;
 		}
 	}
 
 	printk("==========dev_gpio_probe over==========\n\n");
 	return 0;
 	
-exit_export_gpio_err:
-exit_dir_output_err:
+err3:
 	gpio_free(pdata->gpio_num);
-exit_request_gpio_err:
+err2:
 	devm_kfree(&pdev->dev, dev_data);
-exit_alloc_dev_data_err:
-exit_parse_dt_err:
+err1:
 	devm_kfree(&pdev->dev, pdata);
 
 	return ret;

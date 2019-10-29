@@ -18,9 +18,9 @@
 #ifdef DEVICE_DEBUG
 #undef dev_info
 #define dev_info(fmt, args...)		\
-		do {				\
-				printk("[i2c-device][%s]"fmt, __func__, ##args);	\
-		} while(0)
+	do {				\
+			printk("[i2c-device][%s]"fmt, __func__, ##args);	\
+	} while(0)
 #else
 #define dev_info(fmt, args...)
 #endif
@@ -38,11 +38,10 @@ struct device_data {
 	struct i2c_client *client;
 	struct device_platform_data *pdata;
 	struct mutex dev_i2c_lock;
+	struct work_struct work;
+	struct workqueue_struct *wq;
 };
 
-static struct device_data *dev_data = NULL;
-
-#ifdef CONFIG_OF
 static int device_get_dt_numbers(struct device *dev, char *name,
 			struct device_platform_data *pdata, int size)
 {
@@ -145,18 +144,12 @@ static int device_parse_dt(struct device *dev,
 	
 	return 0;
 }
-#else
-static int device_parse_dt(struct device *dev,
-						struct device_platform_data *pdata)
-{
-	
-}
-#endif
 
 static int device_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	int err = 0;
+	struct device_data *dev_data;
 	struct device_platform_data *pdata;
 	int gpio_value;
 	
@@ -175,7 +168,7 @@ static int device_probe(struct i2c_client *client,
 		if (err) {
 			dev_err(&client->dev, "failed to parse device tree\n");
 			err = -ENODEV;
-			goto exit_parse_dt_err;
+			goto fail1;
 		}
 	} else
 		pdata = client->dev.platform_data;
@@ -183,33 +176,33 @@ static int device_probe(struct i2c_client *client,
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
 		err = -ENODEV;
 		dev_err(&client->dev, "I2C does not work\n");
-		goto exit_check_functionality_failed;
+		goto fail1;
 	}
 	
 	dev_data = kzalloc(sizeof(struct device_data), GFP_KERNEL);
 	if (!dev_data)	{
 		err = -ENOMEM;
-		goto exit_allocate_data_failed;
+		goto fail1;
 	}
 	mutex_init(&dev_data->dev_i2c_lock);
 	dev_data->client = client;
 	dev_data->pdata = pdata;
 	i2c_set_clientdata(client, dev_data);
-	dev_info("I2C-addr = %x\n", client->addr);
+	printk("I2C-addr = %x\n", client->addr);
 
 	if (gpio_is_valid(pdata->test_gpio)) {
 		err = gpio_request(pdata->test_gpio, "test_gpio");
 		if (err) {
 			dev_err(&client->dev, "test-gpio request failed\n");
-			goto exit_request_test_gpio_failed;
+			goto fail2;
 		}
 		gpio_value = gpio_get_value(pdata->test_gpio);
 		printk("default gpio value: %d\n", gpio_value);
 
-		err = gpio_direction_output(pdata->test_gpio, 0);
+		err = gpio_direction_output(pdata->test_gpio, 1);
 		if (err) {
 			dev_err(&client->dev, "set gpio direction failed\n");
-			goto exit_set_gpio_dire_failed;
+			goto fail3;
 		}
 		gpio_value = gpio_get_value(pdata->test_gpio);
 		printk("curren gpio value: %d\n", gpio_value);
@@ -217,7 +210,7 @@ static int device_probe(struct i2c_client *client,
 		err = gpio_export(pdata->test_gpio, true);
 		if (err) {
 			dev_err(&client->dev, "test-gpio export failed\n");
-			goto exit_export_gpio_failed;
+			goto fail3;
 		}
 		
 	}
@@ -225,14 +218,11 @@ static int device_probe(struct i2c_client *client,
 	dev_info("==========driver probe over==========\n");
 	return 0;
 
-exit_export_gpio_failed:
-exit_set_gpio_dire_failed:
+fail3:
 	gpio_free(pdata->test_gpio);
-exit_request_test_gpio_failed:	
+fail2:	
 	kfree(dev_data);
-exit_allocate_data_failed:
-exit_check_functionality_failed:	
-exit_parse_dt_err:
+fail1:
 	devm_kfree(&client->dev, pdata);
 	return err;
 }
@@ -242,7 +232,7 @@ static int device_remove(struct i2c_client *client)
 	struct device_data *dev_data;
 	struct device_platform_data *pdata;
 	
-	dev_info("==========driver remove start==========\n");
+	dev_info("==========device remove start==========\n");
 	dev_data = i2c_get_clientdata(client);
 	if (!dev_data) {
 		dev_err(&client->dev, "unable to get clientdata\n");
@@ -255,13 +245,13 @@ static int device_remove(struct i2c_client *client)
 	
 	devm_kfree(&client->dev, dev_data->pdata);
 	kfree(dev_data);
-	dev_info("==========driver remove over==========\n");
+	dev_info("==========device remove over==========\n");
 	
 	return 0;
 }
 
 static struct i2c_device_id device_id[] = {
-	{ .name = "test-device",},
+	{ .name = "test-device", 0 },
 	{ },
 };
 MODULE_DEVICE_TABLE(i2c, device_id);
@@ -270,10 +260,11 @@ static struct of_device_id device_match_table[] = {
 	{ .compatible = "test,i2c-device",},
 	{ },
 };
+MODULE_DEVICE_TABLE(of, device_match_table);
 
 static struct i2c_driver device_driver = {
 	.driver = {
-		.name = "virtual_dev_driver",
+		.name = "virtual_device_driver",
 		.owner = THIS_MODULE,
 		.of_match_table = device_match_table,
 	},

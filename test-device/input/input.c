@@ -22,39 +22,51 @@ struct device_data {
 	struct platform_device *pdev;
 	struct input_dev *input_dev;
 	struct device_platform_data *pdata;
-	struct work_struct work;
+	struct delayed_work work;
 	struct workqueue_struct *wq;
-	struct mutex dev_lock;
 	int irq;
 };
 
-static struct device_data *dev_data = NULL;
-
 static void device_report_work(struct work_struct *work)
 {
+	struct delayed_work *dwork = to_delayed_work(work);
+	struct device_data *dev_data = container_of(dwork, 
+				struct device_data, work);
 	struct input_dev *input_dev = dev_data->input_dev;
+	struct device_platform_data *pdata = dev_data->pdata;
+	int gpio_value;
 
-	input_report_key(input_dev, KEY_7, 1);
-	input_sync(input_dev);
+	gpio_value = gpio_get_value(pdata->gpio_num);
+	if (gpio_value == 0) {
+		printk("gpio-value = %d\n", gpio_value);
+	
+		input_report_key(input_dev, KEY_7, 1);
+		input_sync(input_dev);
+		input_report_key(input_dev, KEY_7, 0);
+		input_sync(input_dev);
 
+	}
 	enable_irq(dev_data->irq);
 }
 
 static irqreturn_t device_interrupt(int irq, void *dev_id)
 {
-	disable_irq_nosync(dev_data->irq);
+	struct device_data *dev_data = (struct device_data *)dev_id;
 
-	if (!work_pending(&dev_data->work))
-		queue_work(dev_data->wq, &dev_data->work);
+	disable_irq_nosync(dev_data->irq);	//disable irq
+	if (!delayed_work_pending(&dev_data->work))	//whether a work item is currently pending
+		queue_delayed_work(dev_data->wq, &dev_data->work, 
+			msecs_to_jiffies(40));
 
 	return IRQ_HANDLED;
 }
 
 static int 
-device_request_input_dev(struct device_data *dev_data)
+device_request_input_dev(struct device_data *dev_data,
+		struct platform_device *pdev)
 {
 	struct input_dev *input_dev;
-	struct platform_device *pdev = dev_data->pdev;
+	struct device_platform_data *pdata = dev_data->pdata;
 	int ret;
 
 	/* allocate input device */
@@ -65,26 +77,24 @@ device_request_input_dev(struct device_data *dev_data)
 	}
 	dev_data->input_dev = input_dev;
 
-	input_dev->name = pdev->name;
+	input_dev->name = pdata->label;
 	input_dev->dev.parent = &pdev->dev;
 	input_dev->phys = "input-gpio";
 	
-
 	__set_bit(EV_KEY, input_dev->evbit);	//event bitmap
 	__set_bit(KEY_7, input_dev->keybit);	//keycode bitmap
 
 	/* request input device */
 	ret = input_register_device(input_dev);
 	if (ret)
-		goto exit_register_input_dev_failed;
+		goto error;
 
 	return 0;
 	
-exit_register_input_dev_failed:
+error:
 	input_free_device(input_dev);
 	return ret;
 }
-
 
 static int device_parse_dt(struct device *dev,
 		struct device_platform_data *pdata)
@@ -94,7 +104,7 @@ static int device_parse_dt(struct device *dev,
 
 	ret = of_property_read_string(np, "label", &pdata->label);
 	if (ret && (ret != EINVAL)) {
-		dev_err(dev, "Unable to read label\n");
+		dev_err(dev, "unable to read label\n");
 		return ret;
 	}
 	printk("label = %s\n", pdata->label);
@@ -102,7 +112,7 @@ static int device_parse_dt(struct device *dev,
 	pdata->gpio_num = of_get_named_gpio_flags(np, "gpios",
 				0, &pdata->gpio_flag);
 	if (pdata->gpio_num < 0) {
-		dev_err(dev, "Invalid gpio number %d\n", pdata->gpio_num);
+		dev_err(dev, "invalid gpio number %d\n", pdata->gpio_num);
 		return -EINVAL;
 	}
 	printk("gpio-num = %d,gpio-flag = %d\n", pdata->gpio_num,
@@ -113,115 +123,113 @@ static int device_parse_dt(struct device *dev,
 
 static int input_gpio_probe(struct platform_device *pdev)
 {
+	struct device_data *dev_data;
 	struct device_platform_data *pdata;
 	int ret;
 
-	printk("\n==========input_gpio_probe start==========\n");
-	printk("pdev-name = %s, dev-name = %s\n", pdev->name,
-			dev_name(&pdev->dev));
+	printk("\n[%s]==========input_gpio_probe start==========\n",
+			__func__);
+	printk("pdev-name = %s,dev-name = %s\n", pdev->name,
+				dev_name(&pdev->dev));
 	if (pdev->dev.of_node) {
 		pdata = devm_kzalloc(&pdev->dev, 
 			sizeof(struct device_platform_data), GFP_KERNEL);
 		if (!pdata) {
-			dev_err(&pdev->dev, "Failed to allocate memory\n");
+			dev_err(&pdev->dev, "failed to allocate memory\n");
 			return -ENOMEM;
 		}
 
 		ret = device_parse_dt(&pdev->dev, pdata);
 		if (ret) {
-			dev_err(&pdev->dev, "Failed to parse device tree\n");
+			dev_err(&pdev->dev, "failed to parse device tree\n");
 			ret = -ENODEV;
-			goto exit_parse_dt_err;
+			goto fail1;
 		}
 	} else 
 		pdata = pdev->dev.platform_data;
 
 	dev_data = devm_kzalloc(&pdev->dev, 
-		sizeof(struct device_data), GFP_KERNEL);
+				sizeof(struct device_data), GFP_KERNEL);
 	if (!dev_data) {
 		ret = -ENOMEM;
-		goto exit_alloc_dev_data_err;
+		goto fail1;
 	}
 
 	dev_data->pdev = pdev;
 	dev_data->pdata = pdata;
-	mutex_init(&dev_data->dev_lock);
 	platform_set_drvdata(pdev, dev_data);
 
 	if (gpio_is_valid(pdata->gpio_num)) {
 		ret = gpio_request(pdata->gpio_num, pdata->label);
 		if (ret) {
-			dev_err(&pdev->dev, "Failed to request gpio number %d\n",
+			dev_err(&pdev->dev, "failed to request gpio number %d\n",
 				pdata->gpio_num);
-			goto exit_request_gpio_err;
+			goto fail2;
 		}
 
 		ret = gpio_direction_input(pdata->gpio_num);
 		if (ret) {
-			dev_err(&pdev->dev, "Failed to set gpio input\n");
-			goto exit_dir_input_err;
+			dev_err(&pdev->dev, "failed to set gpio input\n");
+			goto fail3;
 		}
 
 		dev_data->irq = gpio_to_irq(pdata->gpio_num);
 		if (dev_data->irq < 0) {
-			dev_err(&pdev->dev, "Failed to tranform gpio number to irq number\n");
+			dev_err(&pdev->dev, "failed to tranform gpio number to irq number\n");
 			ret = dev_data->irq;
-			goto exit_tran_irq_num_err;
+			goto fail3;
 		}
 
 		ret = gpio_export(pdata->gpio_num, true);
 		if (ret) {
-			dev_err(&pdev->dev, "Failed to export gpio number %d\n",
+			dev_err(&pdev->dev, "failed to export gpio number %d\n",
 				pdata->gpio_num);
-			goto exit_export_gpio_err;
+			goto fail3;
 		}
 	}
 
 	/* allocate and request input system */
-	ret = device_request_input_dev(dev_data);
+	ret = device_request_input_dev(dev_data, pdev);
 	if (ret) {
-		dev_err(&pdev->dev, "request input device failed\n");
-		goto exit_request_input_dev_err;
+		dev_err(&pdev->dev, "failed to request input device\n");
+		goto fail3;
 	}
 
 	/* init work queue */
-	INIT_WORK(&dev_data->work, device_report_work);
+	INIT_DELAYED_WORK(&dev_data->work, device_report_work);
 	dev_data->wq = create_singlethread_workqueue(pdev->name);
 	if (!dev_data->wq) {
-		dev_err(&pdev->dev, "Failed to create work queue\n");
+		dev_err(&pdev->dev, "failed to create work queue\n");
 		ret = -ESRCH;
-		goto exit_create_workqueue_err;
+		goto fail4;
 	}
 
 	/* request irq */
 	ret = request_irq(dev_data->irq, device_interrupt, 
-				IRQF_TRIGGER_HIGH, pdev->name, dev_data);
+				IRQF_TRIGGER_FALLING, pdev->name, dev_data);
 	if (ret) {
 		dev_err(&pdev->dev, "request irq failed\n");
-		goto exit_request_irq_err;
+		goto fail5;
 	}
 
-	printk("==========input_gpio_probe over==========\n\n");
+	printk("[%s]==========input_gpio_probe over==========\n\n", 
+			__func__);
+	
 	return 0;
 
-
-exit_request_irq_err:
-	cancel_work_sync(&dev_data->work);
+fail5:
+	cancel_delayed_work_sync(&dev_data->work);
 	destroy_workqueue(dev_data->wq);
-exit_create_workqueue_err:
+fail4:
 	input_unregister_device(dev_data->input_dev);
 	input_free_device(dev_data->input_dev);
-exit_request_input_dev_err:
-exit_export_gpio_err:
-exit_tran_irq_num_err:
-exit_dir_input_err:
+fail3:
 	gpio_free(pdata->gpio_num);
-exit_request_gpio_err:
+fail2:
 	devm_kfree(&pdev->dev, dev_data);
-exit_alloc_dev_data_err:
-exit_parse_dt_err:
+fail1:
 	devm_kfree(&pdev->dev, pdata);
-
+	
 	return ret;
 }
 
@@ -230,13 +238,23 @@ static int input_gpio_remove(struct platform_device *pdev)
 	struct device_data *dev_data = platform_get_drvdata(pdev);
 	struct device_platform_data *pdata = dev_data->pdata;
 
+	/* release gpio resource */
 	if (gpio_is_valid(pdata->gpio_num))
 		gpio_free(pdata->gpio_num);
 
+	/* stop work and destroy workqueue */
+	cancel_delayed_work_sync(&dev_data->work);
+	destroy_workqueue(dev_data->wq);
+
+	/* release input subsystem */
+	input_unregister_device(dev_data->input_dev);
+	input_free_device(dev_data->input_dev);
+
+	/* free irq resource */
+	free_irq(dev_data->irq, dev_data);
+
 	devm_kfree(&pdev->dev, pdata);
-	pdata = NULL;
 	devm_kfree(&pdev->dev, dev_data);
-	dev_data = NULL;
 
 	return 0;
 }

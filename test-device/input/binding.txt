@@ -1,0 +1,21 @@
+# dts node #
+
+input_gpio_pins {
+	qcom,pins = <&gp 98>;	//GPIO_98
+	qcom,num-grp-pins = <1>;
+	qcom,pin-func = <0>;
+	label = "input_gpio_pins";
+	input_gpio_statu: input_gpio {
+		drive-strength = <2>;
+		bias-pull-down;	//下拉
+	};
+};
+
+input-gpio {
+	status = "ok";
+	compatible = "input-gpio";
+	pinctrl-names = "default";
+	pinctrl-0 = <&input_gpio_statu>;
+	label = "gpio-input";
+	gpios = <&msm_gpio 98 0>;	//GPIO_98(911+98=1001)
+};
