@@ -56,7 +56,7 @@ static irqreturn_t device_interrupt(int irq, void *dev_id)
 	disable_irq_nosync(dev_data->irq);	//disable irq
 	if (!delayed_work_pending(&dev_data->work))	//whether a work item is currently pending
 		queue_delayed_work(dev_data->wq, &dev_data->work, 
-			msecs_to_jiffies(40));
+			msecs_to_jiffies(100));
 
 	return IRQ_HANDLED;
 }
@@ -81,7 +81,7 @@ device_request_input_dev(struct device_data *dev_data,
 	input_dev->dev.parent = &pdev->dev;
 	input_dev->phys = "input-gpio";
 	
-	__set_bit(EV_KEY, input_dev->evbit);	//event bitmap
+	__set_bit(EV_KEY | EV_SYN, input_dev->evbit);	//event bitmap
 	__set_bit(KEY_7, input_dev->keybit);	//keycode bitmap
 
 	/* request input device */
