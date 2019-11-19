@@ -2,7 +2,6 @@
 #include <linux/init.h>
 #include <linux/timer.h>
 	...
-	...
 		
 struct device_drvdata {
 	struct timer_list timer;
