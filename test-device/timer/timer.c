@@ -11,6 +11,7 @@
 #include <linux/workqueue.h>
 #include <linux/input.h>
 #include <linux/irq.h>
+#include <linux/timer.h>
 
 struct device_platform_data {
 	const char *label;
@@ -22,16 +23,15 @@ struct device_data {
 	struct platform_device *pdev;
 	struct input_dev *input_dev;
 	struct device_platform_data *pdata;
-	struct delayed_work work;
+	struct timer_list timer;
+	struct work_struct work;
 	struct workqueue_struct *wq;
 	int irq;
 };
 
-static void device_report_work(struct work_struct *work)
+static void timer_function(unsigned long data)
 {
-	struct delayed_work *dwork = to_delayed_work(work);
-	struct device_data *dev_data = container_of(dwork, 
-				struct device_data, work);
+	struct device_data *dev_data = (struct device_data *)data;
 	struct input_dev *input_dev = dev_data->input_dev;
 	struct device_platform_data *pdata = dev_data->pdata;
 	int gpio_value;
@@ -40,13 +40,21 @@ static void device_report_work(struct work_struct *work)
 	if (gpio_value == 0) {
 		printk("gpio-value = %d\n", gpio_value);
 	
-		input_report_key(input_dev, KEY_7, 1);
+		input_report_key(input_dev, KEY_8, 1);
 		input_sync(input_dev);
-		input_report_key(input_dev, KEY_7, 0);
+		input_report_key(input_dev, KEY_8, 0);
 		input_sync(input_dev);
-
 	}
+	
 	enable_irq(dev_data->irq);
+}
+
+static void device_report_work(struct work_struct *work)
+{
+	struct device_data *dev_data = container_of(work, 
+				struct device_data, work);
+	
+	mod_timer(&dev_data->timer, jiffies + msecs_to_jiffies(100));
 }
 
 static irqreturn_t device_interrupt(int irq, void *dev_id)
@@ -54,9 +62,9 @@ static irqreturn_t device_interrupt(int irq, void *dev_id)
 	struct device_data *dev_data = (struct device_data *)dev_id;
 
 	disable_irq_nosync(dev_data->irq);	//disable irq
-	if (!delayed_work_pending(&dev_data->work))	//whether a work item is currently pending
-		queue_delayed_work(dev_data->wq, &dev_data->work, 
-			msecs_to_jiffies(100));
+	
+	if (!work_pending(&dev_data->work))
+		queue_work(dev_data->wq, &dev_data->work);
 
 	return IRQ_HANDLED;
 }
@@ -82,7 +90,7 @@ device_request_input_dev(struct device_data *dev_data,
 	input_dev->phys = "input-gpio";
 	
 	__set_bit(EV_KEY | EV_SYN, input_dev->evbit);	//event bitmap
-	__set_bit(KEY_7, input_dev->keybit);	//keycode bitmap
+	__set_bit(KEY_8, input_dev->keybit);	//keycode bitmap
 
 	/* request input device */
 	ret = input_register_device(input_dev);
@@ -121,7 +129,7 @@ static int device_parse_dt(struct device *dev,
 	return 0;
 }
 
-static int input_gpio_probe(struct platform_device *pdev)
+static int timer_gpio_probe(struct platform_device *pdev)
 {
 	struct device_data *dev_data;
 	struct device_platform_data *pdata;
@@ -195,8 +203,12 @@ static int input_gpio_probe(struct platform_device *pdev)
 		goto fail3;
 	}
 
+	/* init timer function */
+	setup_timer(&dev_data->timer, timer_function, (unsigned long)dev_data);
+	add_timer(&dev_data->timer);
+
 	/* init work queue */
-	INIT_DELAYED_WORK(&dev_data->work, device_report_work);
+	INIT_WORK(&dev_data->work, device_report_work);
 	dev_data->wq = create_singlethread_workqueue(pdev->name);
 	if (!dev_data->wq) {
 		dev_err(&pdev->dev, "failed to create work queue\n");
@@ -218,11 +230,12 @@ static int input_gpio_probe(struct platform_device *pdev)
 	return 0;
 
 fail5:
-	cancel_delayed_work_sync(&dev_data->work);
+	cancel_work_sync(&dev_data->work);
 	destroy_workqueue(dev_data->wq);
 fail4:
 	input_unregister_device(dev_data->input_dev);
 	input_free_device(dev_data->input_dev);
+	del_timer(&dev_data->timer);
 fail3:
 	gpio_free(pdata->gpio_num);
 fail2:
@@ -233,7 +246,7 @@ fail1:
 	return ret;
 }
 
-static int input_gpio_remove(struct platform_device *pdev)
+static int timer_gpio_remove(struct platform_device *pdev)
 {
 	struct device_data *dev_data = platform_get_drvdata(pdev);
 	struct device_platform_data *pdata = dev_data->pdata;
@@ -243,13 +256,16 @@ static int input_gpio_remove(struct platform_device *pdev)
 		gpio_free(pdata->gpio_num);
 
 	/* stop work and destroy workqueue */
-	cancel_delayed_work_sync(&dev_data->work);
+	cancel_work_sync(&dev_data->work);
 	destroy_workqueue(dev_data->wq);
 
 	/* release input subsystem */
 	input_unregister_device(dev_data->input_dev);
 	input_free_device(dev_data->input_dev);
 
+	/* release timer */
+	del_timer(&dev_data->timer);
+	
 	/* free irq resource */
 	free_irq(dev_data->irq, dev_data);
 
@@ -260,29 +276,29 @@ static int input_gpio_remove(struct platform_device *pdev)
 }
 
 static struct platform_device_id dev_match_table[] = {
-	{ .name = "input-dev-gpio", .driver_data = 0, },
+	{ .name = "timer-dev-gpio", .driver_data = 0, },
 	{ },
 };
 MODULE_DEVICE_TABLE(platform, dev_match_table);
 
 static struct of_device_id dev_of_match_table[] = {
-	{ .compatible = "input-gpio",},
+	{ .compatible = "timer-gpio",},
 	{ },
 };
 MODULE_DEVICE_TABLE(of, dev_of_match_table);
 
-static struct platform_driver input_gpio_driver = {
-	.probe = input_gpio_probe,
-	.remove = input_gpio_remove,
+static struct platform_driver timer_gpio_driver = {
+	.probe = timer_gpio_probe,
+	.remove = timer_gpio_remove,
 	.driver = {
-		.name = "input-gpio",
+		.name = "timer-gpio",
 		.owner = THIS_MODULE,
 		.of_match_table = dev_of_match_table,
 	},
 	.id_table = dev_match_table,
 };
 
-module_platform_driver(input_gpio_driver);
+module_platform_driver(timer_gpio_driver);
 
 MODULE_AUTHOR("HLY");
 MODULE_LICENSE("GPL v2");

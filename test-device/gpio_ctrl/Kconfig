@@ -1,0 +1,4 @@
+config GPIO_CTRL_TEST
+	tristate "gpio_ctrl test device"
+	help
+		A simple driver for gpio_ctrl.

@@ -1,0 +1,9 @@
+# dts node #
+
+timer_led {
+	status = "okay";
+	compatible = "timer-led";
+	dev,name = "timer-led";
+	gpio-label = "timer_led_gpio";
+	gpios = <&msm_gpio 97 0>;
+};

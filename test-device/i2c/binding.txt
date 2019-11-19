@@ -1,19 +1,16 @@
 # dts node #
 
 i2c@78b9000 {
-
-	i2c_device@58 {
-		compatible = "i2c,test-device";
-
-		pinctrl-names = "default";
-		pinctrl-0 = <&device_gpio_off>;
-
+	test_device@58 {
+		status = "okay";
+		compatible = "test,i2c-device";
 		reg = <0x58>;
-		dev,name = "virtual-device";
-		dev,first-number = <0 300 600 900>;
-		dev,second-number = <200 400 600>;
-		dev,test-gpio = <&msm_gpio 97 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&test_gpio_status>;
+		dev,name = "test-device";
+		dev,first-numbers = <100 300 500 700>;
+		dev,second-numbers = <200 400 600>;
+		dev,test-gpio = <&msm_gpio 17 0>;	//GPIO_17
+		dev,memsize = <0x1000>;	//分配大小
 	};
-
 };
-

@@ -1,0 +1,4 @@
+config TIMER_TEST
+	tristate "input test device with timer"
+	help
+		A simple driver for input system.

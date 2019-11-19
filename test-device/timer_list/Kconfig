@@ -1,0 +1,4 @@
+config TIMER_LIST_TEST
+	tristate "timer_list test"
+	help
+		A simple driver for struct timer_list.
