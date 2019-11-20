@@ -7,7 +7,6 @@ struct gpio_drvdata {
     /* gpio号 */
     int gpio_num;
     ...
-    ...
 };
 
 static int __init gpio_init(void)
@@ -53,7 +52,11 @@ static int __init gpio_init(void)
 
 static void __exit gpio_exit(void)
 {
-
+	...
+	/* 释放已经申请的gpio资源 */
+	if (gpio_is_valid(ddata->gpio_num))
+		gpio_free(ddata->gpio_num);
+	...
 }
 
 module_init(gpio_init);
