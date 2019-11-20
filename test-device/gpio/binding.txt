@@ -1,12 +1,10 @@
 # dts node #
 
-gpio-node1 {
-	status = ok;
-	compatible = "gpio-node";
-	pinctrl-names = "default";
-	pinctrl-0 = <&gpio_node_off>;
-	label = "first-node";
-	gpios = <&msm_gpio 10 0>;
+dev_gpio {
+	status = "okay";
+	compatible = "dev-gpio";
+	label = "test_gpio";
+	gpios = <&msm_gpio 68 0>;
 };
 
 
