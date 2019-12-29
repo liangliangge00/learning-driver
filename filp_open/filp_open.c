@@ -14,7 +14,7 @@ static int __init hello_init(void)
 {
 	int ret;
 	struct file *fp;
-	mm_segment_t fs;
+	mm_segment_t old_fs;
 	loff_t pos;
 	char string1[15] = "hello world,";
 	char string2[15] = "kernel file.";
@@ -22,14 +22,14 @@ static int __init hello_init(void)
 	int len;
 
 	printk(KERN_INFO "=====hello_init=====\n");
-	fp = filp_open("/home/hly/mac.cfg", O_RDWR | O_CREAT, 0644);
+	fp = filp_open("/home/hly/test.cfg", O_RDWR | O_CREAT, 0644);
 	if (IS_ERR(fp)) {
 		ret = PTR_ERR(fp);
-		printk(KERN_INFO "/hoem/hly/mac.cfg open failed,err = %d\n", ret);
+		printk(KERN_INFO "/hoem/hly/test.cfg open failed,err = %d\n", ret);
 		return ret;
 	}
 
-	fs = get_fs();
+	old_fs = get_fs();
 	set_fs(KERNEL_DS);
 
 	pos = fp->f_pos;
@@ -52,7 +52,7 @@ static int __init hello_init(void)
 	printk(KERN_INFO "f_pos = %lld,pos = %lld,buf = %s\n",
 		fp->f_pos, pos, buf);
 
-	set_fs(fs);
+	set_fs(old_fs);
 	filp_close(fp, NULL);
 
 	return 0;
