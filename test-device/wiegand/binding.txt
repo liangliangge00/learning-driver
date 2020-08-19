@@ -1,0 +1,13 @@
+# dts node #
+
+wiegand {
+	status = "okay";
+	compatible = "wiegand";
+
+	data0-gpio = <67 1>;	//GPIO8_3 = 8 * 8 + 3 = 67
+	data1-gpio = <68 1>;	//GPIO8_4 = 8 * 8 + 4 = 68
+
+	bit-width = <400>;		//us
+	bit-interval = <7000>;
+	bit-length = <26>;
+};

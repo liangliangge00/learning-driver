@@ -1,0 +1,5 @@
+config WIEGAND
+	tristate "wiegand driver module"
+	default n
+	help
+	Add support for the wiegand driver module
