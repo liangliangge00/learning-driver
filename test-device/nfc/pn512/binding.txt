@@ -1,0 +1,17 @@
+# dts node #
+
+&i2c_1 { /* BLSP1 QUP1 */
+	
+	nxp@2f { 
+		compatible = "nxp,pn512";
+		reg = <0x2f>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&pn512_pins_active>;
+
+		irq-gpio = <&msm_gpio 36 0>;
+		npd-gpio = <&msm_gpio 65 0>;
+	};
+};
+
+

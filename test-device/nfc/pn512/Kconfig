@@ -1,0 +1,4 @@
+config PN512_NFC_TEST
+	tristate "pn512 nfc test device"
+	help
+		A simple driver for pn512 nfc.
