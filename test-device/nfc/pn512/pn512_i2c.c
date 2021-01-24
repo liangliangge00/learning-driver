@@ -343,10 +343,11 @@ static void pn512_swreset(void)
 //----------------------------------------------------------------------
 static void pn512_powerdown(int enable)
 {
-	if(enable)
+	if (enable)
 		gpio_set_value(pn512_data->npd_gpio, pn512_data->npd_valid);
 	else
 		gpio_set_value(pn512_data->npd_gpio, !pn512_data->npd_valid);
+
 	mdelay(1);
 }
 
@@ -449,7 +450,7 @@ static int pn512_comm(struct pn512_transfer_tx *p_tx, struct pn512_transfer_rx *
 }
 
 //写扩展寄存器
-uint8_t  SetReg_Ext(uint8_t  ExtRegAddr,uint8_t  ExtRegData)
+uint8_t SetReg_Ext(uint8_t  ExtRegAddr,uint8_t  ExtRegData)
 {
     uint8_t  res;
     uint8_t  addr,regdata;
@@ -470,7 +471,7 @@ uint8_t  SetReg_Ext(uint8_t  ExtRegAddr,uint8_t  ExtRegData)
 }
 
 //读扩展寄存器
-uint8_t  GetReg_Ext(uint8_t  ExtRegAddr,uint8_t * ExtRegData)
+uint8_t GetReg_Ext(uint8_t  ExtRegAddr,uint8_t * ExtRegData)
 {
     uint8_t  res;
     uint8_t  addr,regdata;
@@ -492,8 +493,8 @@ uint8_t  GetReg_Ext(uint8_t  ExtRegAddr,uint8_t * ExtRegData)
 
 void Lpcd_Set_IRQ_pin(void)
 {
-    reg_write(JREG_COMMIEN,BIT7);//IRQ引脚反相输出			 
-	reg_write(JREG_DIVIEN,BIT7);//IRQ引脚CMOS输出模式（IRQ引脚不需要外接上拉电阻）   
+    reg_write(JREG_COMMIEN, BIT7);//IRQ引脚反相输出			 
+	reg_write(JREG_DIVIEN, BIT7);//IRQ引脚CMOS输出模式（IRQ引脚不需要外接上拉电阻）   
 } 
 
 //校准备份
@@ -564,7 +565,7 @@ unsigned char Lpcd_Set_Reference(unsigned char lpcd_bias_current,unsigned char l
 }
 
 //扩展寄存器位操作
-uint8_t  ModifyReg_Ext(uint8_t  ExtRegAddr,uint8_t  mask,uint8_t  set)
+uint8_t ModifyReg_Ext(uint8_t  ExtRegAddr,uint8_t  mask,uint8_t  set)
 {
     uint8_t  status;
     uint8_t  regdata;
@@ -804,14 +805,13 @@ unsigned char Lpcd_Calibration_Event(void)
 		return FALSE;
    
 	result = Lpcd_Calibrate_Driver();
-	if (result == TRUE){	
+	if (result == TRUE) {	
 		printk(KERN_INFO "Calibration TRUE!\n");
 /* 		pr_err("\n-> TRUE Lpcd.Calibration.Reference:0x%x!\n",Lpcd.Calibration_Backup.Reference);		
 		pr_err("-> TRUE Lpcd.Calibration.Driver_Index:0x%x!\n",Lpcd.Calibration_Backup.Driver_Index);		
 		pr_err("-> TRUE Lpcd.Calibration_Backup.Gain_Index:0x%x!\n\n",Lpcd.Calibration_Backup.Gain_Index); */
 		return TRUE;
-	} 
-	else{
+	} else {
  		printk(KERN_INFO "Calibration FALSE!\n");
 /*		pr_err("\n-> FALE Lpcd.Calibration.Reference:0x%x!\n",Lpcd.Calibration.Reference);		
 		pr_err("-> FALE Lpcd.Calibration.Driver_Index:0x%x!\n",Lpcd.Calibration.Driver_Index);		
@@ -828,7 +828,7 @@ unsigned char Lpcd_Calibration_Event(void)
 //第一次校准
 static	void start_calibration(void)
 {	
-	if(Lpcd_Calibration_Event()== 1)//进行FM175XX校准		
+	if (Lpcd_Calibration_Event() == 1)//进行FM175XX校准		
 		Lpcd_Calibration_Backup();	
 }
 
@@ -866,19 +866,20 @@ static void pn512_lpcd_SetMod(unsigned char mode,struct pn512_dev *p_dev)
 	unsigned char sirq;
 	
 	if(mode)
-	{	
+	{
 		pn512_powerdown(0);
 		
 		//IRQ_EVENT
 		//Lpcd_Calibration_Event();//LPCD校准
 
-		Lpcd_Set_Driver(LPCD_P_DRIVER[Lpcd.Calibration.Driver_Index],LPCD_N_DRIVER[Lpcd.Calibration.Driver_Index],LPCD_TX2RF_EN);//配置LPCD输出驱动
+		Lpcd_Set_Driver(LPCD_P_DRIVER[Lpcd.Calibration.Driver_Index],
+			LPCD_N_DRIVER[Lpcd.Calibration.Driver_Index], LPCD_TX2RF_EN);//配置LPCD输出驱动
 		Lpcd_Set_IRQ_pin();
 		
 		reg_write(ComIEnReg, 0x80);                                  
 		reg_write(DivIEnReg, 0x80);
-		reg_write(ComIrqReg,0x7f); 
-		SetReg_Ext(JREG_LPCD_CTRL1,JBIT_BIT_CTRL_SET + JBIT_LPCD_IE);	//读卡器打开LPCD中断 
+		reg_write(ComIrqReg, 0x7f); 
+		SetReg_Ext(JREG_LPCD_CTRL1, JBIT_BIT_CTRL_SET + JBIT_LPCD_IE);	//读卡器打开LPCD中断 
 		
 		Lpcd_Get_IRQ(&sirq); 
 		
@@ -910,7 +911,7 @@ static irqreturn_t pn512_irq_handler(int irq, void *dev_id)
 
 	//pr_err("nfc irq wake up %d\n", irq);  
 	
-	if(p_dev->irq_enabled){
+	if(p_dev->irq_enabled) {
 		p_dev->flag = TRUE;
 		wake_up_interruptible(&p_dev->read_wq);
 		pr_info("nfc irq wake up\n");  
@@ -935,7 +936,7 @@ static ssize_t pn512_dev_read(struct file *filp, char __user *buf,size_t count, 
 	ret = wait_event_interruptible_timeout(p_dev->read_wq, p_dev->flag, msecs_to_jiffies(1000));
 
 	// 中断唤醒后，读取LPCD中断寄存器，判断是否检测到IC卡
-	if(ret > 0){
+	if (ret > 0) {
 		pn512_powerdown(0);
 		// 获取IRQ中断状态
 		GetReg_Ext(JREG_LPCD_IRQ, &irq);//读取LPCD中断寄存器
@@ -983,7 +984,7 @@ static ssize_t pn512_dev_write(struct file *filp, const char __user *buf,size_t 
 
 static int pn512_dev_open(struct inode *inode, struct file *filp)
 {
-	struct pn512_dev *p_dev = container_of(filp->private_data,struct pn512_dev,misc_dev);
+	struct pn512_dev *p_dev = container_of(filp->private_data, struct pn512_dev, misc_dev);
 
 	filp->private_data = p_dev;
 
@@ -1018,28 +1019,31 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	//pr_err("%s :enter cmd = %u, arg = %ld\n", __func__, cmd, arg);
 
 	mutex_lock(&pn512_data->io_mutex);
-	switch (cmd){
+	switch (cmd) {
 	case PN512_IOC_REGWRITE:
-		if(copy_from_user(&reg, (struct pn512_reg *)arg, sizeof(struct pn512_reg))) {
+		if (copy_from_user(&reg, (struct pn512_reg *)arg, sizeof(struct pn512_reg))) {
 			pr_err("%s %d: failed to copy from user space\n", __func__, __LINE__);
 			res = -EFAULT;
 			goto err;
 		}
 		res = reg_write(reg.address, reg.value);
 		break;
+
 	case PN512_IOC_REGREAD:
 		if (copy_from_user(&reg, (struct pn512_reg *)arg, sizeof(struct pn512_reg))) {
 			pr_err("%s %d: failed to copy from user space\n", __func__, __LINE__);
 			res = -EFAULT;
 			goto err;
 		}
+
 		reg.value = reg_read(reg.address);
-		if(copy_to_user((struct pn512_reg *)arg, &reg, sizeof(struct pn512_reg))) {
+		if (copy_to_user((struct pn512_reg *)arg, &reg, sizeof(struct pn512_reg))) {
 			pr_err("%s %d: failed to copy to user space\n", __func__, __LINE__);
 			res = -EFAULT;
 			goto err;
 		}
 		break;
+
 	case PN512_IOC_REGSBIT:
 		if (copy_from_user(&reg, (struct pn512_reg *)arg, sizeof(struct pn512_reg))) {
 			pr_err("%s %d: failed to copy from user space\n", __func__, __LINE__);
@@ -1048,6 +1052,7 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		}
 		res = reg_setbit(reg.address, reg.value);
 		break;
+
 	case PN512_IOC_REGCBIT:
 		if (copy_from_user(&reg, (struct pn512_reg *)arg, sizeof(struct pn512_reg))) {
 			pr_err("%s %d: failed to copy from user space\n", __func__, __LINE__);
@@ -1056,6 +1061,7 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		}
 		res = reg_clearbit(reg.address, reg.value);
 		break;
+
 	case PN512_IOC_TXDATA:
 		if (copy_from_user(&pn512_tx, (struct pn512_transfer_tx *)arg, sizeof(struct pn512_transfer_tx))) {
 			pr_err("%s %d: failed to copy from user space\n", __func__, __LINE__);
@@ -1064,6 +1070,7 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		}
 		res = pn512_tx.length;
 		break;
+
 	case PN512_IOC_RXDATA:
 		res = pn512_comm(&pn512_tx, &pn512_rx);
 		if (copy_to_user((struct pn512_transfer_rx *)arg, &pn512_rx, sizeof(struct pn512_transfer_rx))) {
@@ -1072,6 +1079,7 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			goto err;
 		}
 		break;
+
 	case PN512_IOC_IRQENABLE:
 		if(!pn512_data->irq_enabled) {
 			pr_err("### on");
@@ -1079,6 +1087,7 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			pn512_data->irq_enabled = TRUE;
 		}
 		break;
+
 	case PN512_IOC_IRQDISABLE:
 		if(pn512_data->irq_enabled) {
 			pr_err("### off");
@@ -1086,27 +1095,35 @@ long  pn512_dev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 			disable_irq(pn512_data->client->irq);
 		}
 		break;
+
 	case PN512_IOC_ISOTYPE:
 		set_isotype((unsigned char)arg);
 		break;
+
 	case PN512_IOC_RFMODE:
 		set_rfmode((unsigned char)arg);
 		break;
+
 	case PN512_IOC_SETTIMER:
 		set_timer((unsigned int)arg);
 		break;
+
 	case PN512_IOC_HWRESET:
 		pn512_hwreset();
 		break;
+
 	case PN512_IOC_SWRESET:
 		pn512_swreset();
 		break;
+
 	case PN512_IOC_SETPWD:
 		pn512_powerdown((int)arg);
 		break;
+
 	case PN512_IOC_LPCD:
 		pn512_lpcd_SetMod((unsigned char)arg,pn512_data);
 		break;
+
 	case PN512_IOC_STARTCAL:
 		start_calibration();
 		break;

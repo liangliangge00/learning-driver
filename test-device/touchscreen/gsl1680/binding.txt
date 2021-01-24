@@ -1,0 +1,26 @@
+# dts node #
+
+&i2c_3 {
+	status = "ok";
+	silead@40 {
+		compatible = "silead,gsl-tp";
+		reg = <0x40>;
+		interrupts-parent = <&tlmm>;
+		interrupts = <65 0x2>;
+		gsl,name = "gsl3670";
+		gsl,panel-coords = <0 0 800 1405>;
+		gsl,display-coords = <0 0 800 1280>;
+		gsl,hard-reset-delay-ms = <20>;
+		gsl,post-hard-reset-delay-ms = <20>;
+		gsl,reset-gpio = <&tlmm 64 0x0>;
+		gsl,irq-gpio = <&tlmm 65 0x2008>;
+		gsl,num-max-touches = <2>;
+		gsl,button-map = <139 172 158>;
+		gsl,cfg-index = <6>; //配置索引号：0==>对应V200触摸屏,1==>V101触摸屏,2==>TPS465触摸屏,3==tpx_910,4==tpx_920,5==tps_508,6==tps_930
+		gsl,irq-wake = <1>;		//支持中断唤醒系统
+		vdd-supply = <&pm8953_l10>;
+        vcc-i2c-supply = <&pm8953_l6>;
+	};
+};
+
+

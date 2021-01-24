@@ -1,0 +1,12 @@
+#
+# GSL1680 touchscreen driver configuration
+#
+
+config TOUCHSCREEN_GSL1680
+	bool "I2C"
+	depends on I2C
+	help
+	  Say Y here if you have a GSL1680 touchscreen interfaced
+	  to the host processor over I2C
+	  If unsure, say N.
+	  

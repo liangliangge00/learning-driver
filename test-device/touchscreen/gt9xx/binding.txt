@@ -1,0 +1,49 @@
+# dts node #
+
+&i2c_bus3 {
+    status = "okay";
+    clock-frequency = <100000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	goodix_ts@5d {
+		compatible = "goodix,gt9xx";
+		reg = <0x5d>;
+		gtp_resolution_x = <800>;
+		gtp_resolution_y = <1280>;
+		gtp_int_tarigger = <1>;
+		gtp_change_x2y	 = <0>;
+		gtp_overturn_x	 = <0>;
+		gtp_overturn_y	 = <0>;
+		gtp_send_cfg	 = <1>;
+		gtp_cfg_select	 = <0>;
+		gtp_touch_wakeup = <1>;
+		goodix_rst_gpio  = <3>;		// reset GPIO0_3 = 8 * 0 + 3 = 3
+		goodix_irq_gpio  = <4>;		// int   GPIO0_4 = 8 * 0 + 4 = 4
+
+		/* telpo mipi 8inch 800x1280 lcd touchscreen */
+		goodix,cfg-group0 = [
+			42 20 03 00 05 0A 35 00 01 08
+			28 05 50 32 03 05 00 00 00 00
+			00 00 00 18 1A 1E 14 8C 2E 0E
+			17 15 F1 08 00 00 00 9B 03 1C
+			00 00 00 00 00 03 64 32 00 00
+			00 0F 23 94 C5 02 07 00 00 04
+			A1 10 00 8B 13 00 7C 16 00 6A
+			1B 00 5E 20 00 5E 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00
+			00 00 02 04 06 08 0A 0C 0E 10
+			12 14 16 18 1A 1C 00 00 00 00
+			00 00 00 00 00 00 00 00 00 00
+			00 00 2A 29 28 26 24 22 21 20
+			1F 1E 1D 1C 18 16 14 00 02 04
+			06 08 0A 0C 0F 10 12 13 00 00
+			00 00 00 00 00 00 00 00 00 00
+			00 00 00 00 F9 01
+		];
+	};
+};
+
+
