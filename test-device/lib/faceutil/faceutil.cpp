@@ -1,11 +1,3 @@
-/**********************************************************************************
-File Name	:	faceutil.cpp 
-Description	:	TelpoFace人脸识别终端底层控制接口jni库
-Revision	:	v1.0
-Author		:	jiangxh
-Date		:	2018/10/11
-***********************************************************************************/
-
 #define LOG_TAG "faceutil"
 #define LOG_NDDEBUG 0
 

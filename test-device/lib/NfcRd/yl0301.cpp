@@ -1,10 +1,4 @@
-/*--------------------------------------------------------------------------------
-File Name	:	yl0301.cpp
-Description	:	YL0301 ID卡读卡模块处理，支持em4100，TK4100 125K卡片
-Revision	:	V1.0.0
-Author		:	Bryan Jiang <598612779@qq.com>
-Date		:	2019/6/17
-----------------------------------------------------------------------------------*/
+
 
 #define LOG_TAG "YL0301"
 #define LOG_NDDEBUG 0
@@ -80,7 +74,7 @@ static int set_serial(int fd, int nSpeed, int nBits, char nEvent, int nStop)
     }
     switch(nSpeed)  //设置通信速率
     {
-        case 1200://add by lpl
+        case 1200:
             cfsetispeed(&newtio, B1200);
             cfsetospeed(&newtio, B1200);
             break;
