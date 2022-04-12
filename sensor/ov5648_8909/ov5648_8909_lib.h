@@ -14,25 +14,27 @@
   "libchromatix_"SENSOR_MODEL_NO_OV5648_8909"_"#n".so"
 
 static struct msm_camera_i2c_reg_array init_reg_array[] = {
-  {0x3001, 0x00},
-  {0x3002, 0x00},
-  {0x3011, 0x02},
-  {0x3017, 0x05},
-  {0x3018, 0x4c},
-  {0x301c, 0xd2},
-  {0x3022, 0x00},
-  {0x3034, 0x1a},
-  {0x3035, 0x21},
-  {0x3036, 0x69},
-  {0x3037, 0x03},
-  {0x3038, 0x00},
-  {0x3039, 0x00},
-  {0x303a, 0x00},
-  {0x303b, 0x19},
-  {0x303c, 0x11},
-  {0x303d, 0x30},
+  /* System Control */
+  {0x3001, 0x00}, /* SC_CMMN_PAD_OEN1 (I/O Direction) */
+  {0x3002, 0x00}, /* SC_CMMN_PAD_OEN2 (I/O Direction) */
+  {0x3011, 0x02}, /* SC_CMMN_PAD_PK (FREX Pin en,io drive strength) */
+  {0x3017, 0x05}, /* SC_CMMN_MIPI_PHY */
+  {0x3018, 0x4c}, /* SC_CMMN_MIPI_SC_CTRL (two mipi lane mode,mipi enable) */
+  {0x301c, 0xd2}, /* debug mode */
+  {0x3022, 0x00}, /* SC_CMMN_MIPI_SC_CTRL */
+  {0x3034, 0x1a}, /* SC_CMMN_MIPI_PLL_CTRL0 (mipi_bit_mode:10-bit mode) */
+  {0x3035, 0x21}, /* SC_CMMN_MIPI_PLL_CTRL1 (system_pll_div,scale_divider_mipi) */
+  {0x3036, 0x69}, /* SC_CMMN_MIPI_PLL_MULTIPLIER (PLL_multipliter) */
+  {0x3037, 0x03}, /* SC_CMMN_MIPI_PLL_CTR13 (pll_prediv) */
+  {0x3038, 0x00}, /* SC_CMMN_MIPI_PLL_DEBUG_OPT */
+  {0x3039, 0x00}, /* SC_CMMN_MIPI_PLL_CTRL_R (pll_bypass) */
+  {0x303a, 0x00}, /* SC_CMMN_MIPI_PLLS_CTRL0 (pllS_bypass) */
+  {0x303b, 0x19}, /* SC_CMMN_MIPI_PLLS_CTRL1 (pllS_multiplier) */
+  {0x303c, 0x11}, /* SC_CMMN_MIPI_PLLS_CTRL2 (pllS_sys_div) */
+  {0x303d, 0x30}, /* SC_CMMN_MIPI_PLLS_CTRL3 (pllS_pre_div,plls_div_r,plls_seld5) */
   {0x3105, 0x11},
-  {0x3106, 0x05},
+  {0x3106, 0x05}, /* SRB CTRL (PLL clock divider,rst_arb,sclk_arb) */
+
   {0x3304, 0x28},
   {0x3305, 0x41},
   {0x3306, 0x30},
@@ -45,12 +47,16 @@ static struct msm_camera_i2c_reg_array init_reg_array[] = {
   {0x330e, 0x03},
   {0x330f, 0x20},
   {0x3300, 0x00},
-  {0x3500, 0x00},
-  {0x3501, 0x3d},
-  {0x3502, 0x00},
-  {0x3503, 0x07},
-  {0x350a, 0x00},
-  {0x350b, 0x40},
+
+  /* AEC/AGC Control */
+  {0x3500, 0x00}, /* EXPOSURE (Exposure[19:16]) */
+  {0x3501, 0x3d}, /* EXPOSURE (Exposure[15:8]) */
+  {0x3502, 0x00}, /* EXPOSURE (Exposure[7:0]) */
+  {0x3503, 0x07}, /* MANUAL CTRL (AEC/AGC manual enable) */
+  {0x350a, 0x00}, /* AGC (AGC real gain output high byte_Gain[9:8]) */
+  {0x350b, 0x40}, /* AGC (AGC real gain output low byte_Gain[7:0]) */
+
+  /* ANALOG_CONTROL */
   {0x3601, 0x33},
   {0x3602, 0x00},
   {0x3611, 0x0e},
@@ -74,29 +80,31 @@ static struct msm_camera_i2c_reg_array init_reg_array[] = {
   {0x371c, 0x07},
   {0x3739, 0xd2},
   {0x373c, 0x00},
-  {0x3800, 0x00},
-  {0x3801, 0x00},
-  {0x3802, 0x00},
-  {0x3803, 0x00},
-  {0x3804, 0x0a},
-  {0x3805, 0x3f},
-  {0x3806, 0x07},
-  {0x3807, 0xa3},
-  {0x3808, 0x05},
-  {0x3809, 0x10},
-  {0x380a, 0x03},
-  {0x380b, 0xcc},
-  {0x380c, 0x0b},
-  {0x380d, 0x00},
-  {0x380e, 0x03},
-  {0x380f, 0xe0},
-  {0x3810, 0x00},
-  {0x3811, 0x08},
-  {0x3812, 0x00},
-  {0x3813, 0x04},
-  {0x3814, 0x31},
-  {0x3815, 0x31},
-  {0x3817, 0x00},
+
+  /* timing control */
+  {0x3800, 0x00}, /* TIMING_X_ADDR_START (x_addr_start[11:8]) */
+  {0x3801, 0x00}, /* TIMING_X_ADDR_START (x_addr_start[7:0]) */
+  {0x3802, 0x00}, /* TIMING_Y_ADDR_START (y_addr_start[11:8]) */
+  {0x3803, 0x00}, /* TIMING_Y_ADDR_START (y_addr_start[7:0]) */
+  {0x3804, 0x0a}, /* TIMING_X_ADDR_END (x_addr_end[11:8]) */
+  {0x3805, 0x3f}, /* TIMING_X_ADDR_END (x_addr_end[7:0]) */
+  {0x3806, 0x07}, /* TIMING_Y_ADDR_END (y_addr_end[11:8]) */
+  {0x3807, 0xa3}, /* TIMING_Y_ADDR_END (y_addr_end[7:0]) */
+  {0x3808, 0x05}, /* TIMING_X_OUTPUT_SIZE (Video output horizontal width[11:8]) */
+  {0x3809, 0x10}, /* TIMING_X_OUTPUT_SIZE (Video output horizontal width[7:0]) */
+  {0x380a, 0x03}, /* TIMING_Y_OUTPUT_SIZE (Video output vertical height[11:8]) */
+  {0x380b, 0xcc}, /* TIMING_Y_OUTPUT_SIZE (Video output vertical height[7:0]) */
+  {0x380c, 0x0b}, /* TIMING_HTS (Total horizontal size[12:8]) */
+  {0x380d, 0x00}, /* TIMING_HTS (Total horizontal size[7:0]) */
+  {0x380e, 0x03}, /* TIMING_VTS (Total vertical size[15:8]) */
+  {0x380f, 0xe0}, /* TIMING_VTS (Total vertical size[7:0]) */
+  {0x3810, 0x00}, /* TIMING_ISP_X_WIN (ISP horizontal offset[11:8]) */
+  {0x3811, 0x08}, /* TIMING_ISP_X_WIN (ISP horizontal offset[7:0]) */
+  {0x3812, 0x00}, /* TIMING_ISP_Y_WIN (ISP vertical offset[11:8]) */
+  {0x3813, 0x04}, /* TIMING_ISP_Y_WIN (ISP vertical offset[7:0]) */
+  {0x3814, 0x31}, /* TIMING_X_INC */
+  {0x3815, 0x31}, /* TIMING_Y_INC */
+  {0x3817, 0x00}, /* TIMING_HSYNCST (HSYNC start point[7:0]) */
   
   {0x3820, 0x48},//mirror
   {0x3821, 0x01},//flip
@@ -114,6 +122,8 @@ static struct msm_camera_i2c_reg_array init_reg_array[] = {
   {0x3839, 0x04},
   {0x383a, 0x00},
   {0x383b, 0x01},
+
+  /* strobe/frame exposure */
   {0x3b00, 0x00},
   {0x3b02, 0x08},
   {0x3b03, 0x00},
@@ -126,6 +136,7 @@ static struct msm_camera_i2c_reg_array init_reg_array[] = {
   {0x3b0a, 0x04},
   {0x3b0b, 0x00},
   {0x3b0c, 0x3d},
+
   {0x3f01, 0x0d},
   {0x3f0f, 0xf5},
   {0x4000, 0x89},
@@ -189,11 +200,13 @@ static struct msm_camera_i2c_reg_array init_reg_array[] = {
 static struct msm_camera_i2c_reg_array res0_reg_array[] = {
   //capture preview
   // 2592x1944 15fps 2 lane MIPI 420Mbps/lane
-  {0x3501, 0x7b},
-  {0x3502, 0x00},
-  {0x3708, 0x63},
-  {0x3709, 0x12},
-  {0x370c, 0xcc},
+  {0x3501, 0x7b}, /* EXPOSURE (Exposure[15:8]) */
+  {0x3502, 0x00}, /* EXPOSURE (Exposure[7:0]) */
+  {0x3708, 0x63}, /* Analog Control Register */
+  {0x3709, 0x12}, /* Analog Control Register */
+  {0x370c, 0xcc}, /* Analog Control Register */
+
+  /* timing control */
   {0x3800, 0x00},
   {0x3801, 0x00},
   {0x3802, 0x00},
@@ -218,8 +231,8 @@ static struct msm_camera_i2c_reg_array res0_reg_array[] = {
   {0x3815, 0x11},
   {0x3817, 0x00},
   
-  {0x3820, 0x40},
-  {0x3821, 0x01},
+  {0x3820, 0x40}, //mirror
+  {0x3821, 0x01}, //flip
   /*
   {0x3820, 0x46},
   {0x3821, 0x07},
