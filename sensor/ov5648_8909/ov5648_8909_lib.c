@@ -39,6 +39,7 @@ static struct msm_sensor_power_setting power_setting[] = {
     .config_val = 0,
     .delay = 0,
   },
+
   /*
   {
     .seq_type = SENSOR_VREG,
@@ -60,10 +61,10 @@ static struct msm_sensor_power_setting power_setting[] = {
     .config_val = GPIO_OUT_HIGH,
     .delay = 5,
   },
-   */
-   //luffy add
+  */
+  //luffy add
    
-   {
+  {
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_VANA,
 		.config_val = GPIO_OUT_HIGH,
@@ -87,8 +88,6 @@ static struct msm_sensor_power_setting power_setting[] = {
 		.config_val = 0,
 		.delay = 1,
 	},
-   
-   //
   {
     .seq_type = SENSOR_GPIO,
     .seq_val = SENSOR_GPIO_RESET,
@@ -128,7 +127,7 @@ static struct msm_sensor_power_setting power_setting[] = {
 };
 
 static struct msm_sensor_power_setting power_down_setting[] = {
- {
+  {
 		.seq_type = SENSOR_GPIO,
 		.seq_val = SENSOR_GPIO_VANA,
 		.config_val = GPIO_OUT_LOW,
@@ -183,17 +182,23 @@ static struct msm_camera_sensor_slave_info sensor_slave_info = {
     
     .power_down_setting = power_down_setting,
     .size_down = ARRAY_SIZE(power_down_setting),
-	
   },
 };
+
 static struct msm_sensor_init_params sensor_init_params = {
   .modes_supported = CAMERA_MODE_2D_B,
+  /* sensor position (back or front) */
   .position = BACK_CAMERA_B,
+  /* sensor mounting direction */
   .sensor_mount_angle = SENSOR_MOUNTANGLE_270,
 };
+
 static sensor_output_t sensor_output = {
+  /* sensor image format */
   .output_format = SENSOR_BAYER,
+  /* sensor data output interface */
   .connection_mode = SENSOR_MIPI_CSI,
+  /* sensor data */
   .raw_output = SENSOR_10_BIT_DIRECT,
 };
 
@@ -224,6 +229,7 @@ static sensor_lens_info_t default_lens_info = {
   .ver_view_angle = 42.0,
 };
 
+/* mipi_csi interface lane config */
 #ifndef VFE_40
 static struct csi_lane_params_t csi_lane_params = {
   .csi_lane_assign = 0x4320,
@@ -318,6 +324,7 @@ static struct msm_camera_csid_vc_cfg ov5648_8909_cid_cfg[] = {
 
 static struct msm_camera_csi2_params ov5648_8909_csi_params = {
   .csid_params = {
+    /* mipi data lane number */
     .lane_cnt = 2,
     .lut_params = {
       .num_cid = ARRAY_SIZE(ov5648_8909_cid_cfg),
@@ -327,6 +334,8 @@ static struct msm_camera_csi2_params ov5648_8909_csi_params = {
       },
     },
   },
+
+  /* mipi csi phy config */
   .csiphy_params = {
     .lane_cnt = 2,
     .settle_cnt = 0x1B,
@@ -355,7 +364,6 @@ static sensor_stream_info_array_t ov5648_8909_stream_info_array = {
 };
 
 static struct msm_camera_i2c_reg_setting res_settings[] = {
-
   {
     .reg_setting = res0_reg_array,
     .size = ARRAY_SIZE(res0_reg_array),
@@ -363,6 +371,7 @@ static struct msm_camera_i2c_reg_setting res_settings[] = {
     .data_type = MSM_CAMERA_I2C_BYTE_DATA,
     .delay = 0,
   },
+
 #if 0
   {
     .reg_setting = res1_reg_array,
@@ -430,7 +439,6 @@ static struct sensor_lib_crop_params_array crop_params_array = {
 };
 
 static struct sensor_lib_out_info_t sensor_out_info[] = {
-
   {
     /* full size @ 15 fps */
     .x_output = 0xa20, /* 2592 */
@@ -444,6 +452,7 @@ static struct sensor_lib_out_info_t sensor_out_info[] = {
     .min_fps = 3.75,
     .mode = SENSOR_DEFAULT_MODE,
   },
+
 #if 0
   {
     /* 1/4 size @ 30 fps */
@@ -524,7 +533,6 @@ static struct sensor_res_cfg_table_t ov5648_8909_res_table = {
 };
 
 static struct sensor_lib_chromatix_t ov5648_8909_chromatix[] = {
-
   {
     .common_chromatix = OV5648_8909_LOAD_CHROMATIX(common),
     .camera_preview_chromatix = OV5648_8909_LOAD_CHROMATIX(zsl), /* RES0 */
@@ -532,6 +540,7 @@ static struct sensor_lib_chromatix_t ov5648_8909_chromatix[] = {
     .camcorder_chromatix = OV5648_8909_LOAD_CHROMATIX(default_video), /* RES0 */
     .liveshot_chromatix = OV5648_8909_LOAD_CHROMATIX(liveshot), /* RES0 */
   },
+
 #if 0
   {
     .common_chromatix = OV5648_8909_LOAD_CHROMATIX(common),
@@ -601,7 +610,6 @@ static float ov5648_8909_register_to_real_gain(uint16_t reg_gain)
   float real_gain;
   real_gain = (float) ((float)(reg_gain>>4)+(((float)(reg_gain&0x0f))/16.0));
   return real_gain;
-
 }
 
 /*===========================================================================
